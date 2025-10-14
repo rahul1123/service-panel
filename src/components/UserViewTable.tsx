@@ -37,9 +37,7 @@ import {
 import axios from "axios";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
-import CandidateProfileModal from "@/components/modals/CandidateProfileModal";
-import { BulkUpdateFieldsModal } from "@/components/modals/BulkUpdateUserFieldsModal";
-import AssignToJobModal from "@/components/modals/AssigntoJobModal";
+
 
 import { ALL_COLUMNS, TABS } from "@/lib/user-config";
 import { UserActionsPopover } from "./userActionsPopover";

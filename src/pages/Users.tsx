@@ -18,6 +18,7 @@ interface UserFileUploadFormValues {
   remarks?: string;
   batchId: string; // UUID batch id
   processedAt?: string;
+  
 }
 
 // User File Upload List Schema
@@ -31,6 +32,9 @@ interface UserFileUpload {
   remarks: string | null;
   batchId: string;
   processedAt: string | null;
+  file_name:string;
+  upload_time:string;
+  batch_id:string
 }
 
 export default function UserFileUploads() {
@@ -122,25 +126,34 @@ export default function UserFileUploads() {
 />
 
         {/* Table or File Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {uploads.length === 0 && !loading ? (
-            <p className="text-gray-500">No files uploaded yet.</p>
-          ) : (
-            uploads.map((file) => (
-              <div
-                key={file.id}
-                className="border rounded-md p-4 shadow hover:shadow-lg transition"
-              >
-                <h3 className="font-semibold">{file.fileName}</h3>
-                <p className="text-sm text-gray-600">Status: {file.status}</p>
-                <p className="text-sm text-gray-600">Remarks: {file.remarks || "N/A"}</p>
-                <p className="text-xs text-gray-400 mt-2">
-                  Uploaded: {new Date(file.uploadTime).toLocaleString()}
-                </p>
-              </div>
-            ))
-          )}
-        </div>
+      <div className="overflow-x-auto">
+      <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Id</th>
+            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Name</th>
+            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch ID</th>
+            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Remarks</th>
+            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
+            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Upload Time</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {uploads.map((file,index) => (
+            <tr key={file.id} className="hover:bg-gray-50">
+              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{index+1}</td>
+              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_name}</td>
+              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 break-all">{file.batch_id}</td>
+              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.remarks || "N/A"}</td>
+              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.status|| "N/A"}</td>
+              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                {new Date(file.upload_time).toLocaleString()}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
       </div>
     </Layout>
   );
