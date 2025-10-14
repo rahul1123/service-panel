@@ -5,7 +5,7 @@ import { API_BASE_URL } from "../config/api";
 import { decode } from "punycode";
 
 type UserDetails = {
-  recruiter_Id:number;
+  id:number;
   name: string;
   email: string;
   roles: string[];
@@ -55,6 +55,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         "cognito:groups"?: string[];
         email: string;
         name: string;
+        id:number;
       };
       const response = await axios.post(`${API_BASE_URL}/auth/signin`, {
         email,
@@ -62,12 +63,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       });
       const { accessToken} = response.data;
 
-      localStorage.setItem("accessToken", accessToken);
-      // localStorage.setItem("idToken", idToken);
-      // localStorage.setItem("refreshToken", refreshToken);
-      // localStorage.setItem("agency_id", agency_id);
-      // localStorage.setItem("recruiter_id", id);
-      
+      localStorage.setItem("accessToken", accessToken);  
       const token = localStorage.getItem("accessToken");
       if (token) {
         const decoded: DecodedToken = jwtDecode(token);
@@ -106,7 +102,7 @@ const getUserDetails = (): UserDetails | null => {
     const decoded: any = jwtDecode(token);
     console.log(decoded,'decoded')
     return {
-      recruiter_Id:recruiterId,
+      id: decoded.id,
       name: decoded.name,
       email: decoded.email,
       roles: decoded["cognito:groups"] || [],
