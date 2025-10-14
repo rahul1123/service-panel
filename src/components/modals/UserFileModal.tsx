@@ -20,7 +20,7 @@ interface UserFileUploadFormModalProps {
   setEditingFileUpload: (fileUpload: any | null) => void;
 }
 
-const API_BASE_URL = "http://16.171.117.2:3000";
+const API_BASE_URL = "http://localhost:3000";
 
 export default function UserFileUploadFormModal({
   open,
@@ -42,12 +42,27 @@ export default function UserFileUploadFormModal({
     }
   }, [editingFileUpload]);
 
-  const validate = (): boolean => {
-    const newErrors: { file?: string } = {};
-    if (!file) newErrors.file = "File is required";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+const validate = (): boolean => {
+  const newErrors: { file?: string } = {};
+
+  if (!file) {
+    newErrors.file = "File is required";
+  } else {
+    const allowedMimeTypes = ["text/csv", "application/vnd.ms-excel"];
+    const fileExtension = file.name.split(".").pop()?.toLowerCase();
+
+    if (
+      !allowedMimeTypes.includes(file.type) &&
+      fileExtension !== "csv"
+    ) {
+      newErrors.file = "Only CSV files are allowed";
+    }
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -65,7 +80,7 @@ export default function UserFileUploadFormModal({
         });
         toast.success("File upload updated successfully");
       } else {
-        await axios.post(`${API_BASE_URL}/user-file-uploads`, formData, {
+        await axios.post(`${API_BASE_URL}/user-file-uploads/import`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         toast.success("File uploaded successfully");

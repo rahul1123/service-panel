@@ -35,7 +35,7 @@ interface UserFileUpload {
 
 export default function UserFileUploads() {
   const [uploads, setUploads] = useState<UserFileUpload[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [loading, setLoading] = useState(true);
 
   // Fetch all file uploads
