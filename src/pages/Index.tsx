@@ -23,7 +23,6 @@ import {
   Line,
 } from "recharts";
 import { useEffect, useState } from "react";
-import PostNewJobModal from "@/components/modals/PostNewJobModal";
 import axios from "axios";
 const API_BASE_URL = " http://13.62.22.94:3000";
 
@@ -160,10 +159,10 @@ const Index = () => {
           onClose={() => setIsClientModalOpen(false)}
         /> */}
 
-        <PostNewJobModal
+        {/* <PostNewJobModal
           open={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-        />
+        /> */}
 
     
     

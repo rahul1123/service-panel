@@ -5,10 +5,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import UploadResume from "../panels/UploadResume";
-import Uploadbulk from "../panels/Uploadbulk";
-import LinkedinImPort from "../panels/LinkedinImport";
-import { UserManual } from "../panels/UserManual";
 interface CandidateForm {
   name: string;
   email: string;
@@ -54,11 +50,11 @@ const AddCandidateModal = ({ open, handleClose,candidate, fetchCandidates }: Add
               </TabsTrigger>
             </TabsList> */}
             <TabsContent value="manual">
-               <UserManual
+               {/* <UserManual
                 candidate={candidate}        // pass candidate to form
                 fetchCandidates={fetchCandidates}
                 onClose={handleClose}
-              />
+              /> */}
             </TabsContent>
             {/* <TabsContent value="resume">
               <UploadResume />

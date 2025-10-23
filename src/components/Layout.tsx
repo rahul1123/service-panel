@@ -37,7 +37,7 @@ const menuItems = [
     title: "Dashboard",
     url: "/",
     icon: Home,
-    roles: ["A"],
+    roles: ["admin","reseller"],
     // roles: ["SuperAdmin","admin", "Interviewer", "Recruiter"],
   },
 
@@ -45,7 +45,7 @@ const menuItems = [
     title: "Reseller",
     url: "/reseller",
     icon: BarChart3,
-    roles: ["A"],
+    roles: ["admin"],
   },
    
  
@@ -53,13 +53,13 @@ const menuItems = [
     title: "Users",
     url: "/users",
     icon: BarChart3,
-    roles: ["R"],
+    roles: ["reseller"],
   },
    {
     title: "Application",
     url: "/application",
     icon: BarChart3,
-    roles: ["A",'R'],
+    roles: ["admin","reseller"],
   },
    
 ];

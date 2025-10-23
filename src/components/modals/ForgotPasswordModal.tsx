@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
-const API_BASE_URL = " http://13.62.22.94:3000";
+const API_BASE_URL = "http://localhost:3000";
 
 interface ForgotPasswordModalProps {
   open: boolean;

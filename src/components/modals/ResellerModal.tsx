@@ -29,7 +29,7 @@ interface ResellerFormModalProps {
   setEditingReseller: (reseller: any | null) => void;
 }
 
-const API_BASE_URL = "http://16.171.117.2:3000";
+const API_BASE_URL = "http://localhost:3000";
 
 const initialFormValues: ResellerFormValues = {
   domain: "",

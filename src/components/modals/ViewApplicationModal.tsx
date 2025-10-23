@@ -12,7 +12,7 @@ import { RefreshCw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
-const API_BASE_URL = " http://13.62.22.94:3000";
+const API_BASE_URL = "http://localhost:3000";
 
 interface StatusOption {
   id: number;
