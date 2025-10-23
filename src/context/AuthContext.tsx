@@ -61,6 +61,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       ): response is SuccessResponse => response.status === true;
 
       //comment the login 
+       const url = `${API_BASE_URL}/login`; // matches: /api/v1/panel/login
+    const headers = {
+      "x-api-key": "f7ab26185b14fc87db613850887be3b8",
+      "Content-Type": "application/json",
+      Authorization:
+        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiY3VzdG9tZXIiLCJ1c2VySWQiOjQsImVtYWlsIjoiYWRtaW5AYWxwaG9yaWMuY29tIiwiaWF0IjoxNzYxMjIzMzg0LCJleHAiOjE3NjEyNTIxODR9.do04t7LSR1z7mB2QwkUvp7p__jXUZ53rwFHB9vkRdSk",
+    };
+     const response = await axios.post(url, {email, password,}, { headers });
+
+     console.log( response ,'response after login')
 
       //    const response = await axios.post(`${API_BASE_URL}/auth/signin`, {
       //   email,
@@ -69,11 +79,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // const { accessToken} = response.data;
 
       // ===== sucess response with dummy data =====
-      const response: ApiResponse = {
-        status: true,
-        token:
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFtZSI6IkFkbWluIFVzZXIiLCJlbWFpbCI6ImFkbWluQHBhbmVsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2MTIyMzc2NiwiZXhwIjoxNzYxMjUyNTY2fQ.cGBPy7JFH1LrhZ4PhQHmDFtwLfTZaCi-WqQcdHjVK9A",
-      };
+      // const response: ApiResponse = {
+      //   status: true,
+      //   token:
+      //     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFtZSI6IkFkbWluIFVzZXIiLCJlbWFpbCI6ImFkbWluQHBhbmVsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2MTIyMzc2NiwiZXhwIjoxNzYxMjUyNTY2fQ.cGBPy7JFH1LrhZ4PhQHmDFtwLfTZaCi-WqQcdHjVK9A",
+      // };
 
       // failed login Response
       // const response: ApiResponse = {
