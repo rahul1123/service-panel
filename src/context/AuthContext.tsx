@@ -69,18 +69,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // const { accessToken} = response.data;
 
       // ===== sucess response with dummy data =====
-      // const response: ApiResponse = {
-      //   status: true,
-      //   token:
-      //     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFtZSI6IkFkbWluIFVzZXIiLCJlbWFpbCI6ImFkbWluQHBhbmVsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2MTIyMzc2NiwiZXhwIjoxNzYxMjUyNTY2fQ.cGBPy7JFH1LrhZ4PhQHmDFtwLfTZaCi-WqQcdHjVK9A",
-      // };
+      const response: ApiResponse = {
+        status: true,
+        token:
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFtZSI6IkFkbWluIFVzZXIiLCJlbWFpbCI6ImFkbWluQHBhbmVsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2MTIyMzc2NiwiZXhwIjoxNzYxMjUyNTY2fQ.cGBPy7JFH1LrhZ4PhQHmDFtwLfTZaCi-WqQcdHjVK9A",
+      };
 
       // failed login Response
-      const response: ApiResponse = {
-        status: false,
-        code: "4003",
-        error: "Invalid username or password",
-      };
+      // const response: ApiResponse = {
+      //   status: false,
+      //   code: "4003",
+      //   error: "Invalid username or password",
+      // };
 
       // ✅ Safe narrowing
       if (!isSuccessResponse(response)) {
