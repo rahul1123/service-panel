@@ -47,13 +47,13 @@ export default function Resellers() {
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">Organization Info</h1>
+            <h1 className="text-2xl font-bold text-slate-800">Application</h1>
             <p className="text-slate-600 text-sm">
-              View organization details and contact information
+              View Application details and status
             </p>
           </div>
         </div>
-
+{/* 
         {organization ? (
           <Card className="border-0 shadow-sm bg-white/60 backdrop-blur-sm max-w-xl">
             <CardContent className="p-6 space-y-2">
@@ -70,7 +70,7 @@ export default function Resellers() {
           </Card>
         ) : (
           <p className="text-slate-600">Loading organization info...</p>
-        )}
+        )} */}
       </div>
     </Layout>
   );

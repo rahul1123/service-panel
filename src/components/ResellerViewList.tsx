@@ -14,6 +14,7 @@ import { Edit, Trash2 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import ResellerModal from "./modals/ResellerModal";
+import { API_BASE_URL } from "../config/api";
 
 interface Reseller {
   id: number;
@@ -35,7 +36,6 @@ interface ResellersViewListProps {
   resellers: Reseller[];
 }
 
-const API_BASE_URL = "http://16.171.117.2:3000";
 
 export default function ResellersViewList({
   loading,

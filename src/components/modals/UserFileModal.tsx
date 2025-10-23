@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../../config/api";
 
 interface UserFileUploadFormModalProps {
   open: boolean;
@@ -20,7 +21,6 @@ interface UserFileUploadFormModalProps {
   setEditingFileUpload: (fileUpload: any | null) => void;
 }
 
-const API_BASE_URL = "http://localhost:3000";
 
 export default function UserFileUploadFormModal({
   open,

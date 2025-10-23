@@ -35,20 +35,7 @@ const AddCandidateModal = ({ open, handleClose,candidate, fetchCandidates }: Add
           </DialogHeader>
 
           <Tabs defaultValue="manual" className="w-full">
-            {/* <TabsList className="mb-6 w-full flex justify-around">
-              <TabsTrigger className="w-full" value="manual">
-                Manual Entry
-              </TabsTrigger>
-              <TabsTrigger className="w-full" value="resume">
-                Resume Upload
-              </TabsTrigger>
-              <TabsTrigger className="w-full" value="upload">
-                Bulk Upload
-              </TabsTrigger>
-              <TabsTrigger className="w-full" value="linkedin">
-                LinkedIn Import
-              </TabsTrigger>
-            </TabsList> */}
+  
             <TabsContent value="manual">
                {/* <UserManual
                 candidate={candidate}        // pass candidate to form
