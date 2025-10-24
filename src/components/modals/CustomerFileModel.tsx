@@ -83,7 +83,7 @@ const validate = (): boolean => {
          const headers = {
       "x-api-key": "f7ab26185b14fc87db613850887be3b8",
       Authorization:
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjUsImVtYWlsIjoiYWRtaW5AcGFuZWwuY29tIiwiaWF0IjoxNzYxMjM4Njk2LCJleHAiOjE3NjEyNjc0OTZ9.kwaj-qMiWNyk8dcNC86eKdEFMMJwde-3K5hoYIu04Z8",
+        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjYsImVtYWlsIjoiYWRtaW5AcGFuZWwuY29tIiwiaWF0IjoxNzYxMjkyNTE2LCJleHAiOjE3NjEzMjEzMTZ9.-0OGopOZtblSi_9x2Y3GFSdIToftqumXerSYYlf4Au8",
       "Content-Type": "multipart/form-data",
     };
 
