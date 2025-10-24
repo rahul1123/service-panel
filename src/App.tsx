@@ -54,7 +54,7 @@ const App = () => (
                 }
               />
               <Route
-                path="/upload-customer"
+                path="/upload-customers"
                 element={
                   <ProtectedRoute>
                     <Customers/>
@@ -70,7 +70,7 @@ const App = () => (
                 }
               />
                 <Route
-                path="/list-customer"
+                path="/list-customers"
                 element={
                   <ProtectedRoute>
                     <ListCustomers/>

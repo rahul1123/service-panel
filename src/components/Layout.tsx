@@ -42,8 +42,8 @@ const menuItems = [
   },
 
    {
-    title: "Upload File For Customer",
-    url: "/upload-customer",
+    title: "Upload File For Customers",
+    url: "/upload-customers",
     icon: BarChart3,
     roles: ["admin"],
   },
@@ -62,8 +62,8 @@ const menuItems = [
     roles: ["admin"],
   },
   {
-    title: "List Customer",
-    url: "/list-customer",
+    title: "List Customers",
+    url: "/list-customers",
     icon: BarChart3,
     roles: ["admin"],
   },
@@ -99,7 +99,7 @@ function AppSidebar() {
           <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
             <Briefcase className="w-4 h-4 text-white" />
           </div>
-          <span className="font-bold text-xl text-slate-800">Panel</span>
+          <span className="font-bold text-xl text-slate-800">GWSadmin Panel</span>
         </div>
       </SidebarHeader>
       <SidebarContent className="p-4">

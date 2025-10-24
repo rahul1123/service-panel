@@ -80,7 +80,7 @@ export default function CustomerFileUploads() {
     <Layout>
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <h1 className="text-2xl font-bold text-slate-800">List Customer</h1>
+          <h1 className="text-2xl font-bold text-slate-800">List Customers</h1>
         </div>
 
         {loading && (
@@ -93,29 +93,42 @@ export default function CustomerFileUploads() {
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Primary Email</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Username</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch ID</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Message</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">App Name</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Domain</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status Code</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Response</th>
+                  {/* <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Message</th> */}
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {uploads.map((u, i) => (
-                  <tr key={u.id}>
-                    <td className="px-4 py-2 text-sm">{i + 1}</td>
-                    <td className="px-4 py-2 text-sm">{u.primaryEmail}</td>
-                    <td className="px-4 py-2 text-sm">{u.Username}</td>
-                    <td className="px-4 py-2 text-sm">{u.batch_id}</td>
-                    <td className="px-4 py-2 text-sm">{u.status}</td>
-                    <td className="px-4 py-2 text-sm">{u.message}</td>
-                    <td className="px-4 py-2 text-sm">
-                      {new Date(u.created_at).toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+<tbody className="bg-white divide-y divide-gray-200">
+  {uploads.map((u, i) => {
+    // Parse domain from request_body safely
+    let domain = '';
+    try {
+      const reqBody = JSON.parse(u.request_body || '{}');
+      domain = reqBody.domain || '';
+    } catch (err) {
+      console.error('Invalid JSON in request_body', err);
+    }
+
+    // Determine what to show in Response column
+    const responseText = u.status_code === 200 ? 'ok' : u.response_body;
+
+    return (
+      <tr key={u.id}>
+        <td className="px-4 py-2 text-sm">{i + 1}</td>
+        <td className="px-4 py-2 text-sm">{u.app_name}</td>
+        <td className="px-4 py-2 text-sm">{domain}</td>
+        <td className="px-4 py-2 text-sm">{u.status_code}</td>
+        <td className="px-4 py-2 text-sm">{responseText}</td>
+        <td className="px-4 py-2 text-sm">
+          {new Date(u.created_at).toLocaleString()}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
             </table>
           </div>
         )}

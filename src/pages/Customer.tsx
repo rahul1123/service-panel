@@ -6,70 +6,68 @@ import axios from "axios";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
 import CustomerFileModel from "@/components/modals/CustomerFileModel";
+import { API_BASE_URL } from "../config/api";
 
-const API_BASE_URL = "http://localhost:3000";
-
-// User File Upload Form Schema
-interface UserFileUploadFormValues {
-  userId: number;
-  fileName: string;
-  filePath: string;
-  status: string;
-  remarks?: string;
-  batchId: string; // UUID batch id
-  processedAt?: string;
-  
-}
-
-// User File Upload List Schema
-interface UserFileUpload {
-  id: number;
-  userId: number;
-  fileName: string;
-  filePath: string;
-  uploadTime: string;
-  status: string;
-  remarks: string | null;
-  batchId: string;
-  processedAt: string | null;
-  file_name:string;
-  upload_time:string;
-  batch_id:string
+// Schema matching API response
+interface CustomerFileUpload {
+  batch_id: number;
+  bulk_type: string;
+  original_file_name: string;
+  file_name: string;
+  file_path: string;
+  status: number; // 0 = Pending, 1 = Completed
+  total_count: string;
+  added_by: string;
+  added_on: string;
+  completed_at: string | null;
 }
 
 export default function CustomerFileUploads() {
-  const [uploads, setUploads] = useState<UserFileUpload[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [uploads, setUploads] = useState<CustomerFileUpload[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Fetch all file uploads
-  const fetchUserFileUploads = async () => {
-  setLoading(true);
-  try {
-    const url = "https://gwsapi.amyntas.in/api/v1/panel/list/customers";
+  // Dummy fallback if API fails
+  const dummyUploads: CustomerFileUpload[] = [
+    {
+      batch_id: 0,
+      bulk_type: "user",
+      original_file_name: "sample-customer-file.csv",
+      file_name: "dummy.csv",
+      file_path: "/uploads/dummy.csv",
+      status: 0,
+      total_count: "0.00 MB",
+      added_by: "admin",
+      added_on: new Date().toISOString(),
+      completed_at: null,
+    },
+  ];
 
-    const headers = {
-      "x-api-key": "f7ab26185b14fc87db613850887be3b8",
-      Authorization:
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjUsImVtYWlsIjoiYWRtaW5AcGFuZWwuY29tIiwiaWF0IjoxNzYxMjM4Njk2LCJleHAiOjE3NjEyNjc0OTZ9.kwaj-qMiWNyk8dcNC86eKdEFMMJwde-3K5hoYIu04Z8",
-    };
+  // Fetch customer file uploads
+  const fetchCustomerFileUploads = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${API_BASE_URL}/api/v1/panel/list/bulkupload`, {
+        params: { type: "customer" },
+      });
 
-    // 🟢 Use axios.get with headers
-    const { data } = await axios.get(url, { headers });
-
-    console.log("Customer list response:", data);
-
-    // Assuming API returns { result: [...] }
-    setUploads(data.result || []);
-  } catch (err) {
-    console.error("Failed to fetch customers", err);
-  } finally {
-    setLoading(false);
-  }
-};
+      if (!data?.result?.length) {
+        toast("No data from API, showing dummy data");
+        setUploads(dummyUploads);
+      } else {
+        setUploads(data.result);
+      }
+    } catch (err) {
+      console.error("Failed to fetch customer file uploads", err);
+      toast.error("API request failed, showing dummy data");
+      setUploads(dummyUploads);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchUserFileUploads();
+    fetchCustomerFileUploads();
   }, []);
 
   // Handle CSV Export
@@ -79,23 +77,38 @@ export default function CustomerFileUploads() {
       return;
     }
 
-    const header = ["File Name", "Remark", "Status", "Created At"];
+    const header = [
+      "Batch ID",
+      "Bulk Type",
+      "Original File Name",
+      "File Name",
+      "File Path",
+      "Status",
+      "Total Count",
+      "Added By",
+      "Added On",
+      "Completed At",
+    ];
 
     const rows = uploads.map((u) => [
-      u.fileName,
-      u.remarks ?? "",
-      u.status,
-      u.uploadTime,
+      u.batch_id,
+      u.bulk_type,
+      u.original_file_name,
+      u.file_name,
+      u.file_path,
+      u.status === 0 ? "Pending" : "Completed",
+      u.total_count,
+      u.added_by,
+      new Date(u.added_on).toLocaleString(),
+      u.completed_at ? new Date(u.completed_at).toLocaleString() : "N/A",
     ]);
 
     const csvContent = [header, ...rows]
-      .map((r) => r.map((field) => `"${field ?? ""}"`).join(","))
+      .map((r) => r.map((field) => `"${field}"`).join(","))
       .join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const dateStr = new Date().toISOString().split("T")[0];
-    const fileName = `user_file_uploads_${dateStr}.csv`;
-
+    const fileName = `customer_file_uploads_${new Date().toISOString().split("T")[0]}.csv`;
     saveAs(blob, fileName);
     toast.success("Exported CSV file successfully!");
   };
@@ -107,15 +120,9 @@ export default function CustomerFileUploads() {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Customer File Uploads</h1>
-            <p className="text-slate-600 text-sm">Manage and track uploaded customer files</p>
           </div>
-
           <div className="flex gap-2">
-            <Button
-              onClick={handleExport}
-              variant="outline"
-              className="bg-white/80"
-            >
+            <Button onClick={handleExport} variant="outline" className="bg-white/80">
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
@@ -130,43 +137,55 @@ export default function CustomerFileUploads() {
         </div>
 
         {/* Modal */}
-     <CustomerFileModel
-  open={isModalOpen}
-  setOpen={setIsModalOpen}
-  fetchFileUploads={fetchUserFileUploads} // ✅ Correct prop name
-  editingFileUpload={null}
-  setEditingFileUpload={() => {}}
-/>
+        <CustomerFileModel
+          open={isModalOpen}
+          setOpen={setIsModalOpen}
+          fetchFileUploads={fetchCustomerFileUploads}
+          editingFileUpload={null}
+          setEditingFileUpload={() => {}}
+        />
 
-        {/* Table or File Cards */}
-      <div className="overflow-x-auto">
-      <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Id</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Name</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch ID</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Remarks</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Upload Time</th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {uploads.map((file,index) => (
-            <tr key={file.id} className="hover:bg-gray-50">
-              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{index+1}</td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_name}</td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 break-all">{file.batch_id}</td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.remarks || "N/A"}</td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.status|| "N/A"}</td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                {new Date(file.upload_time).toLocaleString()}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch ID</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Bulk Type</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Name</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Path</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total Count</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added By</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added On</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Completed At</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {uploads.map((file, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.batch_id}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.bulk_type}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_name}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_path}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                    {file.status === 0 ? "Pending" : "Completed"}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.total_count}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.added_by}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(file.added_on).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                    {file.completed_at ? new Date(file.completed_at).toLocaleString() : "N/A"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </Layout>
   );
