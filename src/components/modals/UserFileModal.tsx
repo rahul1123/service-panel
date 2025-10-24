@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { toast } from "sonner";
 import { API_BASE_URL } from "../../config/api";
+import { useAuth } from "@/context/AuthContext"; // ✅ import your auth context
 
 interface UserFileUploadFormModalProps {
   open: boolean;
@@ -20,7 +21,6 @@ interface UserFileUploadFormModalProps {
   editingFileUpload: any | null;
   setEditingFileUpload: (fileUpload: any | null) => void;
 }
-
 
 export default function UserFileUploadFormModal({
   open,
@@ -33,6 +33,8 @@ export default function UserFileUploadFormModal({
   const [remarks, setRemarks] = useState("");
   const [errors, setErrors] = useState<{ file?: string }>({});
 
+  const { getUserDetails } = useAuth(); // ✅ get the auth helper
+
   useEffect(() => {
     if (editingFileUpload) {
       setRemarks(editingFileUpload.remarks || "");
@@ -42,27 +44,23 @@ export default function UserFileUploadFormModal({
     }
   }, [editingFileUpload]);
 
-const validate = (): boolean => {
-  const newErrors: { file?: string } = {};
+  const validate = (): boolean => {
+    const newErrors: { file?: string } = {};
 
-  if (!file) {
-    newErrors.file = "File is required";
-  } else {
-    const allowedMimeTypes = ["text/csv", "application/vnd.ms-excel"];
-    const fileExtension = file.name.split(".").pop()?.toLowerCase();
+    if (!file) {
+      newErrors.file = "File is required";
+    } else {
+      const allowedMimeTypes = ["text/csv", "application/vnd.ms-excel"];
+      const fileExtension = file.name.split(".").pop()?.toLowerCase();
 
-    if (
-      !allowedMimeTypes.includes(file.type) &&
-      fileExtension !== "csv"
-    ) {
-      newErrors.file = "Only CSV files are allowed";
+      if (!allowedMimeTypes.includes(file.type) && fileExtension !== "csv") {
+        newErrors.file = "Only CSV files are allowed";
+      }
     }
-  }
 
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
-
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -74,25 +72,39 @@ const validate = (): boolean => {
     formData.append("batchId", crypto.randomUUID());
 
     try {
+      const user = getUserDetails(); // ✅ get logged-in user
+      const token = user?.token;
+
+      if (!token) {
+        toast.error("No valid token found. Please log in again.");
+        return;
+      }
+
       if (editingFileUpload) {
-        await axios.put(`${API_BASE_URL}/user-file-uploads/${editingFileUpload.id}`, {
-          remarks,
-        });
+        // 🟢 Update remarks only
+        await axios.put(
+          `${API_BASE_URL}/user-file-uploads/${editingFileUpload.id}`,
+          { remarks },
+          {
+            headers: {
+              "x-api-key": "f7ab26185b14fc87db613850887be3b8",
+              Authorization: `Bearer ${token}`, // ✅ dynamic token
+            },
+          }
+        );
         toast.success("File upload updated successfully");
       } else {
-        const url='https://gwsapi.amyntas.in/api/v1/panel/user/upload';
-         const headers = {
-      "x-api-key": "f7ab26185b14fc87db613850887be3b8",
-      Authorization:
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjYsImVtYWlsIjoiYWRtaW5AcGFuZWwuY29tIiwiaWF0IjoxNzYxMjkyNTE2LCJleHAiOjE3NjEzMjEzMTZ9.-0OGopOZtblSi_9x2Y3GFSdIToftqumXerSYYlf4Au8",
-      "Content-Type": "multipart/form-data",
-    };
-    const { data } = await axios.post(url, formData, { headers });
+        // 🟢 Upload new user file
+        const url = `${API_BASE_URL}/panel/user/upload`;
+        const headers = {
+          "x-api-key": "f7ab26185b14fc87db613850887be3b8",
+          Authorization: `Bearer ${token}`, // ✅ dynamic token
+          "Content-Type": "multipart/form-data",
+        };
 
-    console.log("Upload response:", data);
-        // await axios.post(`${API_BASE_URL}/user-file-uploads/import`, formData, {
-        //   headers: { "Content-Type": "multipart/form-data" },
-        // });
+        const { data } = await axios.post(url, formData, { headers });
+        console.log("Upload response:", data);
+
         toast.success("File uploaded successfully");
       }
 
@@ -109,7 +121,9 @@ const validate = (): boolean => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-2xl w-full rounded-xl p-6">
         <DialogHeader>
-          <DialogTitle>{editingFileUpload ? "Edit Remarks" : "Upload  User File"}</DialogTitle>
+          <DialogTitle>
+            {editingFileUpload ? "Edit Remarks" : "Upload User File"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -121,7 +135,9 @@ const validate = (): boolean => {
                 type="file"
                 onChange={(e) => setFile(e.target.files?.[0] || null)}
               />
-              {errors.file && <p className="text-red-500 text-sm">{errors.file}</p>}
+              {errors.file && (
+                <p className="text-red-500 text-sm">{errors.file}</p>
+              )}
             </div>
           )}
 

@@ -6,8 +6,7 @@ import axios from "axios";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
 import UserFileModal from "@/components/modals/UserFileModal";
-
-const API_BASE_URL = "http://localhost:3000";
+import { API_BASE_URL } from "../config/api";
 
 // User File Upload Form Schema
 interface UserFileUploadFormValues {

@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { toast } from "sonner";
 import { API_BASE_URL } from "../../config/api";
+import { useAuth } from "@/context/AuthContext"; // ✅ import your auth context
 
 interface UserFileUploadFormModalProps {
   open: boolean;
@@ -20,7 +21,6 @@ interface UserFileUploadFormModalProps {
   editingFileUpload: any | null;
   setEditingFileUpload: (fileUpload: any | null) => void;
 }
-
 
 export default function UserFileUploadFormModal({
   open,
@@ -32,6 +32,9 @@ export default function UserFileUploadFormModal({
   const [file, setFile] = useState<File | null>(null);
   const [remarks, setRemarks] = useState("");
   const [errors, setErrors] = useState<{ file?: string }>({});
+  
+  const { getUserDetails } = useAuth(); // ✅ get user details from context
+  const user = getUserDetails(); // ✅ extract the current user (token, id, etc.)
 
   useEffect(() => {
     if (editingFileUpload) {
@@ -42,27 +45,22 @@ export default function UserFileUploadFormModal({
     }
   }, [editingFileUpload]);
 
-const validate = (): boolean => {
-  const newErrors: { file?: string } = {};
+  const validate = (): boolean => {
+    const newErrors: { file?: string } = {};
+    if (!file) {
+      newErrors.file = "File is required";
+    } else {
+      const allowedMimeTypes = ["text/csv", "application/vnd.ms-excel"];
+      const fileExtension = file.name.split(".").pop()?.toLowerCase();
 
-  if (!file) {
-    newErrors.file = "File is required";
-  } else {
-    const allowedMimeTypes = ["text/csv", "application/vnd.ms-excel"];
-    const fileExtension = file.name.split(".").pop()?.toLowerCase();
-
-    if (
-      !allowedMimeTypes.includes(file.type) &&
-      fileExtension !== "csv"
-    ) {
-      newErrors.file = "Only CSV files are allowed";
+      if (!allowedMimeTypes.includes(file.type) && fileExtension !== "csv") {
+        newErrors.file = "Only CSV files are allowed";
+      }
     }
-  }
 
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
-
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -80,20 +78,21 @@ const validate = (): boolean => {
         });
         toast.success("File upload updated successfully");
       } else {
-         const headers = {
-      "x-api-key": "f7ab26185b14fc87db613850887be3b8",
-      Authorization:
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjYsImVtYWlsIjoiYWRtaW5AcGFuZWwuY29tIiwiaWF0IjoxNzYxMjkyNTE2LCJleHAiOjE3NjEzMjEzMTZ9.-0OGopOZtblSi_9x2Y3GFSdIToftqumXerSYYlf4Au8",
-      "Content-Type": "multipart/form-data",
-    };
+        if (!user || !user.token) {
+          toast.error("User not authenticated");
+          return;
+        }
 
-    const url = "https://gwsapi.amyntas.in/api/v1/panel/customer/upload"
-    const { data } = await axios.post(url, formData, { headers });
+        const headers = {
+          "x-api-key": "f7ab26185b14fc87db613850887be3b8",
+          Authorization: `Bearer ${user.token}`, // ✅ dynamic token here
+          "Content-Type": "multipart/form-data",
+        };
 
-    console.log("Upload response:", data);
-        // await axios.post(`${API_BASE_URL}/user-file-uploads/import`, formData, {
-        //   headers: { "Content-Type": "multipart/form-data" },
-        // });
+        const url = "https://gwsapi.amyntas.in/api/v1/panel/customer/upload";
+        const { data } = await axios.post(url, formData, { headers });
+
+        console.log("Upload response:", data);
         toast.success("File uploaded successfully");
       }
 
@@ -110,7 +109,9 @@ const validate = (): boolean => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-2xl w-full rounded-xl p-6">
         <DialogHeader>
-          <DialogTitle>{editingFileUpload ? "Edit Remarks" : "Upload Customer File"}</DialogTitle>
+          <DialogTitle>
+            {editingFileUpload ? "Edit Remarks" : "Upload Customer File"}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">

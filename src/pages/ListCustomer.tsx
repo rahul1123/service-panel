@@ -6,13 +6,15 @@ import axios from "axios";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
 import { API_BASE_URL } from "../config/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function CustomerFileUploads() {
   const [uploads, setUploads] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // 🟢 Dummy Fallback Data
+  const { getUserDetails } = useAuth(); // ✅ from context
+
   const dummyData = [
     {
       id: 1,
@@ -41,23 +43,30 @@ export default function CustomerFileUploads() {
   // 🟢 Fetch all Customers
   const fetchCustomer = async () => {
     setLoading(true);
+
     try {
+      const user = getUserDetails(); // ✅ get current logged-in user
+      const token = user?.token; // ✅ safely extract token
+
+      if (!token) {
+        toast.error("No valid token found. Please log in again.");
+        setUploads(dummyData);
+        return;
+      }
+
       const url = `${API_BASE_URL}/list/customers`;
       const headers = {
         "x-api-key": "f7ab26185b14fc87db613850887be3b8",
-        Authorization:
-          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjUsImVtYWlsIjoiYWRtaW5AcGFuZWwuY29tIiwiaWF0IjoxNzYxMjM4Njk2LCJleHAiOjE3NjEyNjc0OTZ9.kwaj-qMiWNyk8dcNC86eKdEFMMJwde-3K5hoYIu04Z8",
+        Authorization: `Bearer ${token}`, // ✅ dynamic token here
       };
 
       const { data } = await axios.get(url, { headers });
       console.log("Customer list response:", data);
-
-      // ✅ If API doesn’t return data, fallback to dummy data
-      setUploads(data?.result?.length ? data.result : dummyData);
+      setUploads(data?.length ? data: dummyData);
     } catch (err) {
       console.error("Failed to fetch customers", err);
       toast.error("Failed to fetch customers, showing dummy data");
-      setUploads(dummyData); // ✅ Set fallback data here if API fails
+      setUploads(dummyData);
     } finally {
       setLoading(false);
     }
@@ -70,17 +79,14 @@ export default function CustomerFileUploads() {
   return (
     <Layout>
       <div className="space-y-4">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-800">List Customer</h1>
         </div>
 
-        {/* Loading State */}
         {loading && (
           <div className="text-center text-gray-500 py-4">Loading customers...</div>
         )}
 
-        {/* Table */}
         {!loading && (
           <div className="overflow-x-auto">
             <table className="min-w-full border border-gray-300 divide-y divide-gray-200">

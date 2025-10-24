@@ -8,6 +8,7 @@ type UserDetails = {
   name: string;
   email: string;
   roles: string[];
+  token:string;
 };
 
 interface AuthContextType {
@@ -105,6 +106,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         name: decoded.name,
         email: decoded.email,
         roles: userRoles,
+        token:accessToken
       };
 
       setUser(userData);
@@ -140,24 +142,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const getUserDetails = (): UserDetails | null => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) return null;
+ const getUserDetails = (): (UserDetails & { token: string }) | null => {
+  const token = localStorage.getItem("accessToken");
+  if (!token) return null;
 
-    try {
-      const decoded: any = jwtDecode(token);
-      const roles = getUserRoles();
-      return {
-        id: decoded.id,
-        name: decoded.name,
-        email: decoded.email,
-        roles,
-      };
-    } catch (err) {
-      console.error("Token decode error", err);
-      return null;
-    }
-  };
+  try {
+    const decoded: any = jwtDecode(token);
+    const roles = getUserRoles();
+
+    return {
+      id: decoded.id,
+      name: decoded.name,
+      email: decoded.email,
+      roles,
+      token, // ✅ include token in the returned object
+    };
+  } catch (err) {
+    console.error("Token decode error", err);
+    return null;
+  }
+};
 
   const logout = () => {
     setUser(null);
