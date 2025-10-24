@@ -55,6 +55,18 @@ const menuItems = [
     icon: BarChart3,
     roles: ["admin"],
   },
+  {
+    title: "List Users",
+    url: "/list-users",
+    icon: BarChart3,
+    roles: ["admin"],
+  },
+  {
+    title: "List Customer",
+    url: "/list-users",
+    icon: BarChart3,
+    roles: ["admin"],
+  },
   //  {
   //   title: "Application",
   //   url: "/application",

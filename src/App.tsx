@@ -12,6 +12,8 @@ const Signup = lazy(() => import("./pages/Signup"));
 const Resellers = lazy(() => import("./pages/Resellers"));
 const Users = lazy(() => import("./pages/Users"));
 const Customers = lazy(() => import("./pages/Customer"));
+const ListUsers = lazy(() => import("./pages/ListUsers"));
+const ListCustomers = lazy(() => import("./pages/ListCustomer"));
 const Applications = lazy(() => import("./pages/Application"));
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -59,6 +61,26 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+                <Route
+                path="/list-users"
+                element={
+                  <ProtectedRoute>
+                    <ListUsers/>
+                  </ProtectedRoute>
+                }
+              />
+                <Route
+                path="/list-customer"
+                element={
+                  <ProtectedRoute>
+                    <ListCustomers/>
+                  </ProtectedRoute>
+                }
+              />
+
+              
+
+              
               
 
               
