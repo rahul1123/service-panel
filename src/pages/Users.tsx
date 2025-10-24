@@ -140,24 +140,34 @@ export default function UserFileUploads() {
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Name</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Path</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added By</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added On</th>
+                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total Count</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added By</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added On</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Completed At</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {uploads.map((file, index) => (
-                  <tr key={file.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.batch_id}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.bulk_type}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 break-all">{file.file_name}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_path || "N/A"}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.status === 0 ? "Pending" : "Completed"}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.added_by || "N/A"}</td>
-                    <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{new Date(file.added_on).toLocaleString()}</td>
-                  </tr>
-                ))}
-              </tbody>
+                    <tbody className="bg-white divide-y divide-gray-200">
+              {uploads.map((file, index) => (
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.batch_id}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.bulk_type}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_name}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_path}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                    {file.status === 1 ? "Completed" : "Pending"}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.total_count}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.added_by}</td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(file.added_on).toLocaleString()}
+                  </td>
+                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                    {file.completed_at ? new Date(file.completed_at).toLocaleString() : "N/A"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
             </table>
           </div>
         )}

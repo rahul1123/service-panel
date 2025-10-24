@@ -30,13 +30,13 @@ export default function CustomerFileUploads() {
   // Dummy fallback if API fails
   const dummyUploads: CustomerFileUpload[] = [
     {
-      batch_id: 0,
-      bulk_type: "user",
+      batch_id: 1234,
+      bulk_type: "customer",
       original_file_name: "sample-customer-file.csv",
       file_name: "dummy.csv",
       file_path: "/uploads/dummy.csv",
-      status: 0,
-      total_count: "0.00 MB",
+      status: 1,
+      total_count: "0.98 MB",
       added_by: "admin",
       added_on: new Date().toISOString(),
       completed_at: null,
@@ -171,7 +171,7 @@ export default function CustomerFileUploads() {
                   <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_name}</td>
                   <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_path}</td>
                   <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                    {file.status === 0 ? "Pending" : "Completed"}
+                    {file.status === 1 ? "Completed" : "Pending"}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.total_count}</td>
                   <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.added_by}</td>
