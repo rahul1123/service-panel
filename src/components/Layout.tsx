@@ -63,7 +63,7 @@ const menuItems = [
   },
   {
     title: "List Customer",
-    url: "/list-users",
+    url: "/list-customer",
     icon: BarChart3,
     roles: ["admin"],
   },

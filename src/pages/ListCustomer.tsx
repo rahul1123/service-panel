@@ -5,168 +5,114 @@ import { Download, Plus } from "lucide-react";
 import axios from "axios";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
-import CustomerFileModel from "@/components/modals/CustomerFileModel";
-
-const API_BASE_URL = "http://localhost:3000";
-
-// User File Upload Form Schema
-interface UserFileUploadFormValues {
-  userId: number;
-  fileName: string;
-  filePath: string;
-  status: string;
-  remarks?: string;
-  batchId: string; // UUID batch id
-  processedAt?: string;
-  
-}
-
-// User File Upload List Schema
-interface UserFileUpload {
-  id: number;
-  userId: number;
-  fileName: string;
-  filePath: string;
-  uploadTime: string;
-  status: string;
-  remarks: string | null;
-  batchId: string;
-  processedAt: string | null;
-  file_name:string;
-  upload_time:string;
-  batch_id:string
-}
+import { API_BASE_URL } from "../config/api";
 
 export default function CustomerFileUploads() {
-  const [uploads, setUploads] = useState<UserFileUpload[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [uploads, setUploads] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Fetch all file uploads
-  const fetchUserFileUploads = async () => {
-  setLoading(true);
-  try {
-    const url = "https://gwsapi.amyntas.in/api/v1/panel/list/customers";
+  // 🟢 Dummy Fallback Data
+  const dummyData = [
+    {
+      id: 1,
+      batch_id: 122,
+      primaryEmail: "dummy@example.com",
+      Username: "DummyUser",
+      password: "******",
+      creationId: "DUMMY-001",
+      status: "N/A",
+      message: "API failed, showing dummy data",
+      created_at: "2025-10-23T18:22:49.000Z",
+    },
+    {
+      id: 2,
+      batch_id: 123,
+      primaryEmail: "backup@example.com",
+      Username: "BackupUser",
+      password: "******",
+      creationId: "DUMMY-002",
+      status: "N/A",
+      message: "Fallback record",
+      created_at: "2025-10-22T16:11:45.000Z",
+    },
+  ];
 
-    const headers = {
-      "x-api-key": "f7ab26185b14fc87db613850887be3b8",
-      Authorization:
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjUsImVtYWlsIjoiYWRtaW5AcGFuZWwuY29tIiwiaWF0IjoxNzYxMjM4Njk2LCJleHAiOjE3NjEyNjc0OTZ9.kwaj-qMiWNyk8dcNC86eKdEFMMJwde-3K5hoYIu04Z8",
-    };
+  // 🟢 Fetch all Customers
+  const fetchCustomer = async () => {
+    setLoading(true);
+    try {
+      const url = `${API_BASE_URL}/list/customers`;
+      const headers = {
+        "x-api-key": "f7ab26185b14fc87db613850887be3b8",
+        Authorization:
+          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjUsImVtYWlsIjoiYWRtaW5AcGFuZWwuY29tIiwiaWF0IjoxNzYxMjM4Njk2LCJleHAiOjE3NjEyNjc0OTZ9.kwaj-qMiWNyk8dcNC86eKdEFMMJwde-3K5hoYIu04Z8",
+      };
 
-    // 🟢 Use axios.get with headers
-    const { data } = await axios.get(url, { headers });
+      const { data } = await axios.get(url, { headers });
+      console.log("Customer list response:", data);
 
-    console.log("Customer list response:", data);
-
-    // Assuming API returns { result: [...] }
-    setUploads(data.result || []);
-  } catch (err) {
-    console.error("Failed to fetch customers", err);
-  } finally {
-    setLoading(false);
-  }
-};
+      // ✅ If API doesn’t return data, fallback to dummy data
+      setUploads(data?.result?.length ? data.result : dummyData);
+    } catch (err) {
+      console.error("Failed to fetch customers", err);
+      toast.error("Failed to fetch customers, showing dummy data");
+      setUploads(dummyData); // ✅ Set fallback data here if API fails
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchUserFileUploads();
+    fetchCustomer();
   }, []);
-
-  // Handle CSV Export
-  const handleExport = () => {
-    if (!uploads.length) {
-      toast.error("No files to export.");
-      return;
-    }
-
-    const header = ["File Name", "Remark", "Status", "Created At"];
-
-    const rows = uploads.map((u) => [
-      u.fileName,
-      u.remarks ?? "",
-      u.status,
-      u.uploadTime,
-    ]);
-
-    const csvContent = [header, ...rows]
-      .map((r) => r.map((field) => `"${field ?? ""}"`).join(","))
-      .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const dateStr = new Date().toISOString().split("T")[0];
-    const fileName = `user_file_uploads_${dateStr}.csv`;
-
-    saveAs(blob, fileName);
-    toast.success("Exported CSV file successfully!");
-  };
 
   return (
     <Layout>
       <div className="space-y-4">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800">Customer File Uploads</h1>
-            <p className="text-slate-600 text-sm">Manage and track uploaded customer files</p>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              onClick={handleExport}
-              variant="outline"
-              className="bg-white/80"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Upload File
-            </Button>
-          </div>
+          <h1 className="text-2xl font-bold text-slate-800">List Customer</h1>
         </div>
 
-        {/* Modal */}
-     <CustomerFileModel
-  open={isModalOpen}
-  setOpen={setIsModalOpen}
-  fetchFileUploads={fetchUserFileUploads} // ✅ Correct prop name
-  editingFileUpload={null}
-  setEditingFileUpload={() => {}}
-/>
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center text-gray-500 py-4">Loading customers...</div>
+        )}
 
-        {/* Table or File Cards */}
-      <div className="overflow-x-auto">
-      <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Id</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Name</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch ID</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Remarks</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Upload Time</th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {uploads.map((file,index) => (
-            <tr key={file.id} className="hover:bg-gray-50">
-              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{index+1}</td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_name}</td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 break-all">{file.batch_id}</td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.remarks || "N/A"}</td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.status|| "N/A"}</td>
-              <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                {new Date(file.upload_time).toLocaleString()}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        {/* Table */}
+        {!loading && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Primary Email</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Username</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch ID</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Message</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {uploads.map((u, i) => (
+                  <tr key={u.id}>
+                    <td className="px-4 py-2 text-sm">{i + 1}</td>
+                    <td className="px-4 py-2 text-sm">{u.primaryEmail}</td>
+                    <td className="px-4 py-2 text-sm">{u.Username}</td>
+                    <td className="px-4 py-2 text-sm">{u.batch_id}</td>
+                    <td className="px-4 py-2 text-sm">{u.status}</td>
+                    <td className="px-4 py-2 text-sm">{u.message}</td>
+                    <td className="px-4 py-2 text-sm">
+                      {new Date(u.created_at).toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </Layout>
   );
