@@ -21,12 +21,10 @@ interface UserFileUpload {
   added_on: string;
   completed_at?: string | null;
 }
-
 export default function UserFileUploads() {
   const [uploads, setUploads] = useState<UserFileUpload[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-
   // Dummy data if API is inactive or fails
   const dummyUploads: UserFileUpload[] = [
     {
@@ -43,7 +41,6 @@ export default function UserFileUploads() {
       completed_at: null,
     },
   ];
-
   // Fetch all file uploads
   const fetchUserFileUploads = async () => {
     setLoading(true);
@@ -52,7 +49,6 @@ export default function UserFileUploads() {
         `${API_BASE_URL}/list/bulkupload`,
         { params: { type: "customer" } }
       );
-
       if (!data?.result || !data?.active) {
         toast("API inactive or no data, showing dummy data");
         setUploads(dummyUploads);
@@ -78,7 +74,6 @@ export default function UserFileUploads() {
       toast.error("No files to export.");
       return;
     }
-
     const header = ["Batch ID", "Bulk Type", "File Name", "File Path", "Status", "Added By", "Added On"];
     const rows = uploads.map((u) => [
       u.batch_id,
