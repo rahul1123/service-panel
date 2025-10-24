@@ -89,7 +89,7 @@ export default function UserFileUploadFormModal({
           "Content-Type": "multipart/form-data",
         };
 
-        const url = "https://gwsapi.amyntas.in/api/v1/panel/customer/upload";
+        const url = `${API_BASE_URL}/customer/upload`;
         const { data } = await axios.post(url, formData, { headers });
 
         console.log("Upload response:", data);

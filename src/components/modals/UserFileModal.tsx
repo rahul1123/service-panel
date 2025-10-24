@@ -95,7 +95,7 @@ export default function UserFileUploadFormModal({
         toast.success("File upload updated successfully");
       } else {
         // 🟢 Upload new user file
-        const url = `${API_BASE_URL}/panel/user/upload`;
+        const url = `${API_BASE_URL}/user/upload`;
         const headers = {
           "x-api-key": "f7ab26185b14fc87db613850887be3b8",
           Authorization: `Bearer ${token}`, // ✅ dynamic token
