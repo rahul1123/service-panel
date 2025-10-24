@@ -5,7 +5,7 @@ import { Download, Plus } from "lucide-react";
 import axios from "axios";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
-import UserFileModal from "@/components/modals/UserFileModal";
+import CustomerFileModel from "@/components/modals/CustomerFileModel";
 
 const API_BASE_URL = "http://localhost:3000";
 
@@ -44,16 +44,29 @@ export default function CustomerFileUploads() {
 
   // Fetch all file uploads
   const fetchUserFileUploads = async () => {
-    setLoading(true);
-    try {
-      const { data } = await axios.get(`${API_BASE_URL}/user-file-uploads`);
-      setUploads(data.result || []);
-    } catch (err) {
-      console.error("Failed to fetch user file uploads", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const url = "https://gwsapi.amyntas.in/api/v1/panel/list/customers";
+
+    const headers = {
+      "x-api-key": "f7ab26185b14fc87db613850887be3b8",
+      Authorization:
+        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjUsImVtYWlsIjoiYWRtaW5AcGFuZWwuY29tIiwiaWF0IjoxNzYxMjM4Njk2LCJleHAiOjE3NjEyNjc0OTZ9.kwaj-qMiWNyk8dcNC86eKdEFMMJwde-3K5hoYIu04Z8",
+    };
+
+    // 🟢 Use axios.get with headers
+    const { data } = await axios.get(url, { headers });
+
+    console.log("Customer list response:", data);
+
+    // Assuming API returns { result: [...] }
+    setUploads(data.result || []);
+  } catch (err) {
+    console.error("Failed to fetch customers", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchUserFileUploads();
@@ -93,8 +106,8 @@ export default function CustomerFileUploads() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-800">User File Uploads</h1>
-            <p className="text-slate-600 text-sm">Manage and track uploaded user files</p>
+            <h1 className="text-2xl font-bold text-slate-800">Customer File Uploads</h1>
+            <p className="text-slate-600 text-sm">Manage and track uploaded customer files</p>
           </div>
 
           <div className="flex gap-2">
@@ -117,7 +130,7 @@ export default function CustomerFileUploads() {
         </div>
 
         {/* Modal */}
-     <UserFileModal
+     <CustomerFileModel
   open={isModalOpen}
   setOpen={setIsModalOpen}
   fetchFileUploads={fetchUserFileUploads} // ✅ Correct prop name

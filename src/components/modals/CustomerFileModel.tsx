@@ -80,13 +80,14 @@ const validate = (): boolean => {
         });
         toast.success("File upload updated successfully");
       } else {
-        const url='https://gwsapi.amyntas.in/api/v1/panel/user/upload';
          const headers = {
       "x-api-key": "f7ab26185b14fc87db613850887be3b8",
       Authorization:
         "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjUsImVtYWlsIjoiYWRtaW5AcGFuZWwuY29tIiwiaWF0IjoxNzYxMjM4Njk2LCJleHAiOjE3NjEyNjc0OTZ9.kwaj-qMiWNyk8dcNC86eKdEFMMJwde-3K5hoYIu04Z8",
       "Content-Type": "multipart/form-data",
     };
+
+    const url = "https://gwsapi.amyntas.in/api/v1/panel/customer/upload"
     const { data } = await axios.post(url, formData, { headers });
 
     console.log("Upload response:", data);
@@ -109,7 +110,7 @@ const validate = (): boolean => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-2xl w-full rounded-xl p-6">
         <DialogHeader>
-          <DialogTitle>{editingFileUpload ? "Edit Remarks" : "Upload  User File"}</DialogTitle>
+          <DialogTitle>{editingFileUpload ? "Edit Remarks" : "Upload Customer File"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
