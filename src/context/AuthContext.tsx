@@ -60,45 +60,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         response: ApiResponse
       ): response is SuccessResponse => response.status === true;
 
-      //comment the login 
-       const url = `${API_BASE_URL}/login`; // matches: /api/v1/panel/login
-    const headers = {
-      "x-api-key": "f7ab26185b14fc87db613850887be3b8",
-      "Content-Type": "application/json",
-      Authorization:
-        "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiY3VzdG9tZXIiLCJ1c2VySWQiOjQsImVtYWlsIjoiYWRtaW5AYWxwaG9yaWMuY29tIiwiaWF0IjoxNzYxMjIzMzg0LCJleHAiOjE3NjEyNTIxODR9.do04t7LSR1z7mB2QwkUvp7p__jXUZ53rwFHB9vkRdSk",
-    };
-     const response = await axios.post(url, {email, password,}, { headers });
+      const url = `${API_BASE_URL}/login`;
+      const headers = {
+        "x-api-key": "f7ab26185b14fc87db613850887be3b8",
+        "Content-Type": "application/json",
+        Authorization:
+          "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiY3VzdG9tZXIiLCJ1c2VySWQiOjQsImVtYWlsIjoiYWRtaW5AYWxwaG9yaWMuY29tIiwiaWF0IjoxNzYxMjIzMzg0LCJleHAiOjE3NjEyNTIxODR9.do04t7LSR1z7mB2QwkUvp7p__jXUZ53rwFHB9vkRdSk",
+      };
 
-     console.log( response ,'response after login')
+      // ✅ Axios returns { data, status, ... }, so extract `.data`
+      const { data } = await axios.post<ApiResponse>(
+        url,
+        { email, password },
+        { headers }
+      );
 
-      //    const response = await axios.post(`${API_BASE_URL}/auth/signin`, {
-      //   email,
-      //   password,
-      // });
-      // const { accessToken} = response.data;
+      console.log("Response after login:", data);
 
-      // ===== sucess response with dummy data =====
-      // const response: ApiResponse = {
-      //   status: true,
-      //   token:
-      //     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NSwibmFtZSI6IkFkbWluIFVzZXIiLCJlbWFpbCI6ImFkbWluQHBhbmVsLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2MTIyMzc2NiwiZXhwIjoxNzYxMjUyNTY2fQ.cGBPy7JFH1LrhZ4PhQHmDFtwLfTZaCi-WqQcdHjVK9A",
-      // };
-
-      // failed login Response
-      // const response: ApiResponse = {
-      //   status: false,
-      //   code: "4003",
-      //   error: "Invalid username or password",
-      // };
-
-      // ✅ Safe narrowing
-      if (!isSuccessResponse(response)) {
-        throw new Error(response.error || "Login failed. Please try again.");
+      // ✅ Safe narrowing to handle success/failure
+      if (!isSuccessResponse(data)) {
+        throw new Error(data.error || "Login failed. Please try again.");
       }
 
-      // ✅ Now TypeScript knows token exists
-      const accessToken = response.token;
+      const accessToken = data.token;
       localStorage.setItem("accessToken", accessToken);
 
       const decoded: DecodedToken = jwtDecode(accessToken);

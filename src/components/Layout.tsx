@@ -42,25 +42,25 @@ const menuItems = [
   },
 
    {
-    title: "Reseller",
-    url: "/reseller",
+    title: "Upload File For Customer",
+    url: "/upload-customer",
     icon: BarChart3,
     roles: ["admin"],
   },
    
  
   {
-    title: "Users",
-    url: "/users",
+    title: "Upload File For Users",
+    url: "/upload-users",
     icon: BarChart3,
-    roles: ["reseller"],
+    roles: ["admin"],
   },
-   {
-    title: "Application",
-    url: "/application",
-    icon: BarChart3,
-    roles: ["admin","reseller"],
-  },
+  //  {
+  //   title: "Application",
+  //   url: "/application",
+  //   icon: BarChart3,
+  //   roles: ["admin","reseller"],
+  // },
    
 ];
 

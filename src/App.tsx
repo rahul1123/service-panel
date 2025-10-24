@@ -11,6 +11,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Signup = lazy(() => import("./pages/Signup"));
 const Resellers = lazy(() => import("./pages/Resellers"));
 const Users = lazy(() => import("./pages/Users"));
+const Customers = lazy(() => import("./pages/Customer"));
 const Applications = lazy(() => import("./pages/Application"));
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -34,14 +35,6 @@ const App = () => (
                 }
               />
               <Route
-                path="/signup"
-                element={
-                  <PublicRoute>
-                    <Signup />
-                  </PublicRoute>
-                }
-              />
-              <Route
                 path="/"
                 element={
                   <ProtectedRoute>
@@ -51,7 +44,7 @@ const App = () => (
               />
            
               <Route
-                path="/users"
+                path="/upload-users"
                 element={
                   <ProtectedRoute>
                     <Users />
@@ -59,21 +52,14 @@ const App = () => (
                 }
               />
               <Route
-                path="/reseller"
+                path="/upload-customer"
                 element={
                   <ProtectedRoute>
-                    <Resellers />
+                    <Customers/>
                   </ProtectedRoute>
                 }
               />
-               <Route
-                path="/application"
-                element={
-                  <ProtectedRoute>
-                    <Applications />
-                  </ProtectedRoute>
-                }
-              />
+              
 
               
               <Route path="*" element={<NotFound />} />
