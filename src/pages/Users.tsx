@@ -26,13 +26,15 @@ export default function UserFileUploads() {
   const [uploads, setUploads] = useState<UserFileUpload[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { getUserDetails } = useAuth(); // ✅ get function from AuthContext
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage =5; // Change this to show more/less rows per page
+  const { getUserDetails } = useAuth(); //get function from AuthContext
   const fetchUserFileUploads = async () => {
     setLoading(true);
     try {
       const userDetails = getUserDetails();
       const token = userDetails?.token;
-
       if (!token) {
         toast.error("No valid token found. Please log in again.");
         setUploads([]);
@@ -44,9 +46,8 @@ export default function UserFileUploads() {
           "x-api-key": "f7ab26185b14fc87db613850887be3b8",
           Authorization: `Bearer ${token}`,
         },
-        params: { type: "user" }, // ✅ moved outside headers
+        params: { type: "user" },
       });
-
       console.log("User list response:", data);
 
       if (!data?.length) {
@@ -63,10 +64,18 @@ export default function UserFileUploads() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchUserFileUploads();
   }, []);
+
+  // Pagination Logic
+  console.log(uploads.length,'length')
+  const totalPages = Math.ceil(uploads.length / itemsPerPage);
+  const paginatedData = uploads.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  console.log(totalPages,'totalPages')
 
   // Handle CSV Export
   const handleExport = () => {
@@ -100,10 +109,7 @@ export default function UserFileUploads() {
       <div className="space-y-4">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800">User File Uploads</h1>
-          </div>
-
+          <h1 className="text-2xl font-bold text-slate-800">User File Uploads</h1>
           <div className="flex gap-2">
             <Button onClick={handleExport} variant="outline" className="bg-white/80">
               <Download className="w-4 h-4 mr-2" /> Export
@@ -130,8 +136,8 @@ export default function UserFileUploads() {
         {loading ? (
           <div className="text-center text-gray-500 py-4">Loading files...</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
+          <div className="overflow-x-auto border border-gray-200 rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
@@ -140,35 +146,73 @@ export default function UserFileUploads() {
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Name</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Path</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
-                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total Count</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added By</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added On</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Completed At</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total Count</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added By</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added On</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Completed At</th>
                 </tr>
               </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-              {uploads.map((file, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.batch_id}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.bulk_type}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_name}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_path}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                    {file.status === 1 ? "Completed" : "Pending"}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.total_count}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.added_by}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(file.added_on).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                    {file.completed_at ? new Date(file.completed_at).toLocaleString() : "N/A"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {paginatedData.length ? (
+                  paginatedData.map((file, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                        {(currentPage - 1) * itemsPerPage + index + 1}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.batch_id}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.bulk_type}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_name}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_path}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                        {file.status === 1 ? "Completed" : "Pending"}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.total_count}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.added_by}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(file.added_on).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                        {file.completed_at ? new Date(file.completed_at).toLocaleString() : "N/A"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={10} className="text-center text-gray-500 py-4">
+                      No uploads found
+                    </td>
+                  </tr>
+                )}
+              </tbody>
             </table>
+
+            {/* Pagination Controls */}
+          {/* Pagination Controls */}
+{totalPages > 0 && (
+  <div className="flex justify-center items-center gap-6 p-4 bg-gray-50 border-t">
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={currentPage === 1}
+      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+    >
+      Previous
+    </Button>
+
+    <span className="text-sm font-medium text-gray-700">
+      Page {currentPage} of {totalPages || 1}
+    </span>
+
+    <Button
+      variant="outline"
+      size="sm"
+      disabled={currentPage === totalPages}
+      onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+    >
+      Next
+    </Button>
+  </div>
+)}
           </div>
         )}
       </div>

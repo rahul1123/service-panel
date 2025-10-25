@@ -1,19 +1,18 @@
 import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Plus } from "lucide-react";
 import axios from "axios";
-import { saveAs } from "file-saver";
 import { toast } from "sonner";
 import { API_BASE_URL } from "../config/api";
 import { useAuth } from "@/context/AuthContext";
 
 export default function CustomerFileUploads() {
   const [uploads, setUploads] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
 
-  const { getUserDetails } = useAuth(); // ✅ from context
+  const { getUserDetails } = useAuth();
 
   const dummyData = [
     {
@@ -40,13 +39,12 @@ export default function CustomerFileUploads() {
     },
   ];
 
-  // 🟢 Fetch all Customers
   const fetchCustomer = async () => {
     setLoading(true);
 
     try {
-      const user = getUserDetails(); // ✅ get current logged-in user
-      const token = user?.token; // ✅ safely extract token
+      const user = getUserDetails();
+      const token = user?.token;
 
       if (!token) {
         toast.error("No valid token found. Please log in again.");
@@ -57,12 +55,11 @@ export default function CustomerFileUploads() {
       const url = `${API_BASE_URL}/list/customers`;
       const headers = {
         "x-api-key": "f7ab26185b14fc87db613850887be3b8",
-        Authorization: `Bearer ${token}`, // ✅ dynamic token here
+        Authorization: `Bearer ${token}`,
       };
 
       const { data } = await axios.get(url, { headers });
-      console.log("Customer list response:", data);
-      setUploads(data?.length ? data: dummyData);
+      setUploads(data?.length ? data : dummyData);
     } catch (err) {
       console.error("Failed to fetch customers", err);
       toast.error("Failed to fetch customers, showing dummy data");
@@ -76,6 +73,19 @@ export default function CustomerFileUploads() {
     fetchCustomer();
   }, []);
 
+  // Pagination logic
+  const totalPages = Math.ceil(uploads.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedData = uploads.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleNext = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+
+  const handlePrev = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
+
   return (
     <Layout>
       <div className="space-y-4">
@@ -88,57 +98,96 @@ export default function CustomerFileUploads() {
         )}
 
         {!loading && (
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">App Name</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Domain</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">maxUnits</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch Id</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Customer Id</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status Code</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Response</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
-                </tr>
-              </thead>
-<tbody className="bg-white divide-y divide-gray-200">
-  {uploads.map((u, i) => {
-    // Parse domain from request_body safely
-   let [domain, maxUnits, batch_id, customerId] = ['', '', '', ''];
-    try {
-      const reqBody = JSON.parse(u.request_body || '{}');
-      domain = reqBody.domain || '';
-      maxUnits = reqBody.maxUnits || '';
-      batch_id = reqBody.batch_id || '';
-      customerId = reqBody.customerId || '';
-    } catch (err) {
-      console.error('Invalid JSON in request_body', err);
-    }
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">App Name</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Domain</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">maxUnits</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch Id</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Customer Id</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status Code</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Response</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {paginatedData.map((u, i) => {
+                    let [domain, maxUnits, batch_id, customerId] = ["", "", "", ""];
+                    try {
+                      const reqBody = JSON.parse(u.request_body || "{}");
+                      domain = reqBody.domain || "";
+                      maxUnits = reqBody.maxUnits || "";
+                      batch_id = reqBody.batch_id || "";
+                      customerId = reqBody.customerId || "";
+                    } catch (err) {
+                      console.error("Invalid JSON in request_body", err);
+                    }
 
-    // Determine what to show in Response column
-    const responseText = u.status_code === 200 ? 'ok' : u.response_body;
+                    const responseText = u.status_code === 200 ? "ok" : u.response_body;
 
-    return (
-      <tr key={u.id}>
-        <td className="px-4 py-2 text-sm">{i + 1}</td>
-        <td className="px-4 py-2 text-sm">{u.app_name}</td>
-        <td className="px-4 py-2 text-sm">{domain}</td>
-        <td className="px-4 py-2 text-sm">{maxUnits}</td>
-        <td className="px-4 py-2 text-sm">{batch_id}</td>
-       <td className="px-4 py-2 text-sm">{customerId}</td>
-        <td className="px-4 py-2 text-sm">{u.status_code}</td>
-        <td className="px-4 py-2 text-sm">{responseText}</td>
-        <td className="px-4 py-2 text-sm">
-          {new Date(u.created_at).toLocaleString()}
-        </td>
-      </tr>
-    );
-  })}
-</tbody>
-            </table>
-          </div>
+                    return (
+                      <tr key={u.id}>
+                        <td className="px-4 py-2 text-sm">{startIndex + i + 1}</td>
+                        <td className="px-4 py-2 text-sm">{u.app_name || "—"}</td>
+                        <td className="px-4 py-2 text-sm">{domain || "—"}</td>
+                        <td className="px-4 py-2 text-sm">{maxUnits || "—"}</td>
+                        <td className="px-4 py-2 text-sm">{batch_id || "—"}</td>
+                        <td className="px-4 py-2 text-sm">{customerId || "—"}</td>
+                        <td className="px-4 py-2 text-sm">{u.status_code || "—"}</td>
+                        <td className="px-4 py-2 text-sm">{responseText || "—"}</td>
+                        <td className="px-4 py-2 text-sm">
+                          {new Date(u.created_at).toLocaleString()}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-3">
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handlePrev}
+                  disabled={currentPage === 1}
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+                <span className="text-sm text-gray-700">
+                  Page {currentPage} of {totalPages || 1}
+                </span>
+                <Button
+                  onClick={handleNext}
+                  disabled={currentPage === totalPages}
+                  variant="outline"
+                >
+                  Next
+                </Button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-600">Items per page:</label>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1); // reset to first page
+                  }}
+                  className="border border-gray-300 rounded-md text-sm p-1"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                </select>
+              </div>
+            </div>
+          </>
         )}
       </div>
     </Layout>
