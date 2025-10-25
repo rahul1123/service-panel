@@ -59,11 +59,11 @@ export default function CustomerFileUploads() {
       };
 
       const { data } = await axios.get(url, { headers });
-      setUploads(data?.length ? data : dummyData);
+      setUploads(data?.length ? data : []);
     } catch (err) {
       console.error("Failed to fetch customers", err);
       toast.error("Failed to fetch customers, showing dummy data");
-      setUploads(dummyData);
+      setUploads([]);
     } finally {
       setLoading(false);
     }

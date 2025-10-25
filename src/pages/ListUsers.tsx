@@ -55,11 +55,11 @@ export default function CustomerFileUploads() {
       const { data } = await axios.get(url, { headers });
       console.log("User list response:", data);
 
-      setUser(data?.length ? data : dummyData);
+      setUser(data?.length ? data : []);
     } catch (err) {
       console.error("Failed to fetch users, showing dummy data", err);
       toast.error("Failed to fetch users, showing dummy data");
-      setUser(dummyData);
+      setUser([]);
     } finally {
       setLoading(false);
     }
