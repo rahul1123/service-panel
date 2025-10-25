@@ -26,7 +26,7 @@ export default function UserFileUploads() {
   const [uploads, setUploads] = useState<UserFileUpload[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { getUserDetails } = useAuth(); //get function from AuthContext
+  const { getUserDetails } = useAuth(); // ✅ get function from AuthContext
   const fetchUserFileUploads = async () => {
     setLoading(true);
     try {

@@ -95,19 +95,24 @@ export default function CustomerFileUploads() {
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">App Name</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Domain</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">maxUnits</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch Id</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Customer Id</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status Code</th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Response</th>
-                  {/* <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Message</th> */}
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
                 </tr>
               </thead>
 <tbody className="bg-white divide-y divide-gray-200">
   {uploads.map((u, i) => {
     // Parse domain from request_body safely
-    let domain = '';
+   let [domain, maxUnits, batch_id, customerId] = ['', '', '', ''];
     try {
       const reqBody = JSON.parse(u.request_body || '{}');
       domain = reqBody.domain || '';
+      maxUnits = reqBody.maxUnits || '';
+      batch_id = reqBody.batch_id || '';
+      customerId = reqBody.customerId || '';
     } catch (err) {
       console.error('Invalid JSON in request_body', err);
     }
@@ -120,6 +125,9 @@ export default function CustomerFileUploads() {
         <td className="px-4 py-2 text-sm">{i + 1}</td>
         <td className="px-4 py-2 text-sm">{u.app_name}</td>
         <td className="px-4 py-2 text-sm">{domain}</td>
+        <td className="px-4 py-2 text-sm">{maxUnits}</td>
+        <td className="px-4 py-2 text-sm">{batch_id}</td>
+       <td className="px-4 py-2 text-sm">{customerId}</td>
         <td className="px-4 py-2 text-sm">{u.status_code}</td>
         <td className="px-4 py-2 text-sm">{responseText}</td>
         <td className="px-4 py-2 text-sm">
