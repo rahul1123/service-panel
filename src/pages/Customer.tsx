@@ -7,8 +7,8 @@ import { saveAs } from "file-saver";
 import { toast } from "sonner";
 import CustomerFileModel from "@/components/modals/CustomerFileModel";
 import { API_BASE_URL } from "../config/api";
+import { useAuth } from "@/context/AuthContext";
 
-// Schema matching API response
 interface CustomerFileUpload {
   batch_id: number;
   bulk_type: string;
@@ -26,41 +26,38 @@ export default function CustomerFileUploads() {
   const [uploads, setUploads] = useState<CustomerFileUpload[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { getUserDetails } = useAuth(); //get function from AuthContext
 
-  // Dummy fallback if API fails
-  const dummyUploads: CustomerFileUpload[] = [
-    {
-      batch_id: 1234,
-      bulk_type: "customer",
-      original_file_name: "sample-customer-file.csv",
-      file_name: "dummy.csv",
-      file_path: "/uploads/dummy.csv",
-      status: 1,
-      total_count: "0.98 MB",
-      added_by: "admin",
-      added_on: new Date().toISOString(),
-      completed_at: null,
-    },
-  ];
-
-  // Fetch customer file uploads
   const fetchCustomerFileUploads = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`${API_BASE_URL}/api/v1/panel/list/bulkupload`, {
-        params: { type: "customer" },
-      });
+      const userDetails = getUserDetails();
+      const token = userDetails?.token;
 
-      if (!data?.result?.length) {
+      if (!token) {
+        toast.error("No valid token found. Please log in again.");
+        setUploads([]);
+        return;
+      }
+      const url = `${API_BASE_URL}/list/bulkupload`;
+      const { data } = await axios.get(url, {
+        headers: {
+          "x-api-key": "f7ab26185b14fc87db613850887be3b8",
+          Authorization: `Bearer ${token}`,
+        },
+        params: { type: "customer" }, //moved outside headers
+      });
+      // console.log("User list response:", data);
+      if (!data?.length) {
         toast("No data from API, showing dummy data");
-        setUploads(dummyUploads);
+        setUploads([]);
       } else {
-        setUploads(data.result);
+        setUploads(data);
       }
     } catch (err) {
       console.error("Failed to fetch customer file uploads", err);
       toast.error("API request failed, showing dummy data");
-      setUploads(dummyUploads);
+      setUploads([]);
     } finally {
       setLoading(false);
     }
@@ -70,7 +67,6 @@ export default function CustomerFileUploads() {
     fetchCustomerFileUploads();
   }, []);
 
-  // Handle CSV Export
   const handleExport = () => {
     if (!uploads.length) {
       toast.error("No files to export.");
@@ -118,9 +114,7 @@ export default function CustomerFileUploads() {
       <div className="space-y-4">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800">Customer File Uploads</h1>
-          </div>
+          <h1 className="text-2xl font-bold text-slate-800">Customer File Uploads</h1>
           <div className="flex gap-2">
             <Button onClick={handleExport} variant="outline" className="bg-white/80">
               <Download className="w-4 h-4 mr-2" />
@@ -150,35 +144,41 @@ export default function CustomerFileUploads() {
           <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
             <thead className="bg-gray-100">
               <tr>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch ID</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Bulk Type</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Name</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Path</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total Count</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added By</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added On</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Completed At</th>
+                {[
+                  "#",
+                  "Batch ID",
+                  "Bulk Type",
+                  "File Name",
+                  "File Path",
+                  "Status",
+                  "Total Count",
+                  "Added By",
+                  "Added On",
+                  "Completed At",
+                ].map((h) => (
+                  <th key={h} className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                    {h}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {uploads.map((file, index) => (
                 <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{index + 1}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.batch_id}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.bulk_type}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_name}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_path}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-4 py-2 text-sm text-gray-900">{index + 1}</td>
+                  <td className="px-4 py-2 text-sm text-gray-900">{file.batch_id}</td>
+                  <td className="px-4 py-2 text-sm text-gray-900">{file.bulk_type}</td>
+                  <td className="px-4 py-2 text-sm text-gray-900">{file.file_name}</td>
+                  <td className="px-4 py-2 text-sm text-gray-900">{file.file_path}</td>
+                  <td className="px-4 py-2 text-sm text-gray-900">
                     {file.status === 1 ? "Completed" : "Pending"}
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.total_count}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.added_by}</td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-2 text-sm text-gray-900">{file.total_count}</td>
+                  <td className="px-4 py-2 text-sm text-gray-900">{file.added_by}</td>
+                  <td className="px-4 py-2 text-sm text-gray-500">
                     {new Date(file.added_on).toLocaleString()}
                   </td>
-                  <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-4 py-2 text-sm text-gray-500">
                     {file.completed_at ? new Date(file.completed_at).toLocaleString() : "N/A"}
                   </td>
                 </tr>

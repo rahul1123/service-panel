@@ -7,6 +7,7 @@ import { saveAs } from "file-saver";
 import { toast } from "sonner";
 import UserFileModal from "@/components/modals/UserFileModal";
 import { API_BASE_URL } from "../config/api";
+import { useAuth } from "@/context/AuthContext";
 // User File Upload Schema
 interface UserFileUpload {
   id: number;
@@ -25,40 +26,39 @@ export default function UserFileUploads() {
   const [uploads, setUploads] = useState<UserFileUpload[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  // Dummy data if API is inactive or fails
-  const dummyUploads: UserFileUpload[] = [
-    {
-      id: 0,
-      batch_id: 10,
-      bulk_type: "user",
-      original_file_name: "sample-customer-file.csv",
-      file_name: "1761326968553.csv",
-      file_path: "/uploads/1761326968553.csv",
-      status: 0,
-      total_count: "0.09 MB",
-      added_by: "admin",
-      added_on: "2025-10-24T17:29:28.000Z",
-      completed_at: null,
-    },
-  ];
-  // Fetch all file uploads
+  const { getUserDetails } = useAuth(); //get function from AuthContext
   const fetchUserFileUploads = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(
-        `${API_BASE_URL}/list/bulkupload`,
-        { params: { type: "customer" } }
-      );
-      if (!data?.result || !data?.active) {
-        toast("API inactive or no data, showing dummy data");
-        setUploads(dummyUploads);
+      const userDetails = getUserDetails();
+      const token = userDetails?.token;
+
+      if (!token) {
+        toast.error("No valid token found. Please log in again.");
+        setUploads([]);
+        return;
+      }
+      const url = `${API_BASE_URL}/list/bulkupload`;
+      const { data } = await axios.get(url, {
+        headers: {
+          "x-api-key": "f7ab26185b14fc87db613850887be3b8",
+          Authorization: `Bearer ${token}`,
+        },
+        params: { type: "user" }, // ✅ moved outside headers
+      });
+
+      console.log("User list response:", data);
+
+      if (!data?.length) {
+        toast("No data from API, showing dummy data");
+        setUploads([]);
       } else {
-        setUploads(data.result);
+        setUploads(data);
       }
     } catch (err) {
-      console.error("Failed to fetch user file uploads", err);
+      console.error("Failed to fetch customer file uploads", err);
       toast.error("API request failed, showing dummy data");
-      setUploads(dummyUploads);
+      setUploads([]);
     } finally {
       setLoading(false);
     }
