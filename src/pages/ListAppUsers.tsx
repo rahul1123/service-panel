@@ -1,17 +1,20 @@
 import Layout from "@/components/Layout";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { ArrowUp, ArrowDown } from "lucide-react";
 
 export default function CustomerFileUploads() {
-  const [appuser, setAppuser] = useState([]);
+  const [appuser, setAppuser] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
 
   const { getUserDetails } = useAuth();
 
@@ -51,38 +54,61 @@ export default function CustomerFileUploads() {
     fetchCustomer();
   }, []);
 
-  // Pagination
-  const totalPages = Math.ceil(appuser.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = appuser.slice(startIndex, startIndex + itemsPerPage);
+  const sortedData = useMemo(() => {
+    let sortableData = [...appuser];
 
-  const handleNext = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-  };
-  const handlePrev = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
-
-  // Export CSV
-  const handleExport = () => {
-    if (!appuser.length) {
-      toast.error("No data to export");
-      return;
+    // Global search
+    if (searchTerm) {
+      const lower = searchTerm.toLowerCase();
+      sortableData = sortableData.filter(
+        (u) =>
+          (u.name && u.name.toLowerCase().includes(lower)) ||
+          (u.email && u.email.toLowerCase().includes(lower)) ||
+          (u.mobile && u.mobile.toLowerCase().includes(lower))
+      );
     }
+
+    // Sorting
+    if (sortConfig) {
+      sortableData.sort((a, b) => {
+        let aVal = a[sortConfig.key] ?? "";
+        let bVal = b[sortConfig.key] ?? "";
+
+        // Handle date columns
+        if (sortConfig.key === "added_on" || sortConfig.key === "updated_on") {
+          aVal = new Date(aVal).getTime();
+          bVal = new Date(bVal).getTime();
+        }
+
+        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return sortableData;
+  }, [appuser, searchTerm, sortConfig]);
+
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedData = sortedData.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleNext = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
+  const handlePrev = () => currentPage > 1 && setCurrentPage(currentPage - 1);
+
+  const requestSort = (key: string) => {
+    let direction: "asc" | "desc" = "asc";
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") direction = "desc";
+    setSortConfig({ key, direction });
+  };
+
+  const handleExport = () => {
+    if (!appuser.length) return toast.error("No data to export");
 
     const csvContent =
       "data:text/csv;charset=utf-8," +
       [
-        [
-          "#",
-          "Name",
-          "Email",
-          "Mobile",
-          "Status",
-          "Role",
-          "Created At",
-          "Updated On",
-        ].join(","),
+        ["#", "Name", "Email", "Mobile", "Status", "Role", "Created At", "Updated On"].join(","),
         ...appuser.map((u, i) =>
           [
             i + 1,
@@ -106,6 +132,16 @@ export default function CustomerFileUploads() {
     document.body.removeChild(link);
   };
 
+  const sortableColumns = [
+    { key: "name", label: "Name" },
+    { key: "email", label: "Email" },
+    { key: "mobile", label: "Mobile" },
+    { key: "status", label: "Status" },
+    { key: "role", label: "Role" },
+    { key: "added_on", label: "Created At" },
+    { key: "updated_on", label: "Updated On" },
+  ];
+
   return (
     <Layout>
       <div className="space-y-4">
@@ -114,6 +150,14 @@ export default function CustomerFileUploads() {
           <h1 className="text-2xl font-bold text-slate-800">List App User</h1>
 
           <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="text"
+              placeholder="Search by Name, Email, Mobile"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border border-gray-300 rounded-md text-sm p-1"
+            />
+
             <div className="flex items-center gap-2">
               <label className="text-sm text-gray-600">From:</label>
               <input
@@ -161,15 +205,26 @@ export default function CustomerFileUploads() {
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Name</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Email</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Mobile</th>
+                    {sortableColumns.map((col) => (
+                      <th
+                        key={col.key}
+                        className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer select-none"
+                        onClick={() => requestSort(col.key)}
+                      >
+                        <div className="flex items-center gap-1">
+                          {col.label}
+                          {sortConfig?.key === col.key ? (
+                            sortConfig.direction === "asc" ? (
+                              <ArrowUp size={14} />
+                            ) : (
+                              <ArrowDown size={14} />
+                            )
+                          ) : null}
+                        </div>
+                      </th>
+                    ))}
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">App Name</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Api Key</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Role</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Updated On</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -179,12 +234,12 @@ export default function CustomerFileUploads() {
                       <td className="px-4 py-2 text-sm">{u.name || "—"}</td>
                       <td className="px-4 py-2 text-sm">{u.email || "—"}</td>
                       <td className="px-4 py-2 text-sm">{u.mobile || "—"}</td>
-                      <td className="px-4 py-2 text-sm">{u.app_name || "—"}</td>
-                      <td className="px-4 py-2 text-sm">{u.api_key || "—"}</td>
                       <td className="px-4 py-2 text-sm">{u.status || "—"}</td>
                       <td className="px-4 py-2 text-sm">{u.role || "—"}</td>
                       <td className="px-4 py-2 text-sm">{new Date(u.added_on).toLocaleString()}</td>
                       <td className="px-4 py-2 text-sm">{new Date(u.updated_on).toLocaleString()}</td>
+                      <td className="px-4 py-2 text-sm">{u.app_name || "—"}</td>
+                      <td className="px-4 py-2 text-sm">{u.api_key || "—"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -200,11 +255,7 @@ export default function CustomerFileUploads() {
                 <span className="text-sm text-gray-700">
                   Page {currentPage} of {totalPages || 1}
                 </span>
-                <Button
-                  onClick={handleNext}
-                  disabled={currentPage === totalPages}
-                  variant="outline"
-                >
+                <Button onClick={handleNext} disabled={currentPage === totalPages} variant="outline">
                   Next
                 </Button>
               </div>

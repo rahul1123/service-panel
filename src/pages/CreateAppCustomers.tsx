@@ -72,7 +72,7 @@ export default function CustomerFileUploads() {
       await axios.post(`https://gwsapi.amyntas.in/api/v1/admin/create/app`, formData, {
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": formData.api_key,
+           "x-api-key": "f7ab26185b14fc87db613850887be3b8",
           Authorization: `Bearer ${token}`,
         },
       });

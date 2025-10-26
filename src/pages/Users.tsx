@@ -1,14 +1,15 @@
 import Layout from "@/components/Layout";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Plus } from "lucide-react";
+import { Download, Plus, ArrowUp, ArrowDown } from "lucide-react";
 import axios from "axios";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
 import UserFileModal from "@/components/modals/UserFileModal";
 import { API_BASE_URL } from "../config/api";
 import { useAuth } from "@/context/AuthContext";
-// User File Upload Schema
+import { Input } from "@/components/ui/input";
+
 interface UserFileUpload {
   id: number;
   batch_id: string | number;
@@ -22,69 +23,102 @@ interface UserFileUpload {
   added_on: string;
   completed_at?: string | null;
 }
+
 export default function UserFileUploads() {
   const [uploads, setUploads] = useState<UserFileUpload[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  // Pagination
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [fromDate, setFromDate] = useState<string>("");
+  const [toDate, setToDate] = useState<string>("");
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage =5; // Change this to show more/less rows per page
-  const { getUserDetails } = useAuth(); //get function from AuthContext
+  const itemsPerPage = 5;
+
+  const { getUserDetails } = useAuth();
+
   const fetchUserFileUploads = async () => {
     setLoading(true);
     try {
-      const userDetails = getUserDetails();
-      const token = userDetails?.token;
+      const token = getUserDetails()?.token;
       if (!token) {
         toast.error("No valid token found. Please log in again.");
         setUploads([]);
         return;
       }
-      const url = `${API_BASE_URL}/list/bulkupload`;
-      const { data } = await axios.get(url, {
+      const { data } = await axios.get(`${API_BASE_URL}/list/bulkupload`, {
         headers: {
           "x-api-key": "f7ab26185b14fc87db613850887be3b8",
           Authorization: `Bearer ${token}`,
         },
         params: { type: "user" },
       });
-      console.log("User list response:", data);
-
-      if (!data?.length) {
-        toast("No data from API, showing dummy data");
-        setUploads([]);
-      } else {
-        setUploads(data);
-      }
+      setUploads(data || []);
     } catch (err) {
-      console.error("Failed to fetch customer file uploads", err);
-      toast.error("API request failed, showing dummy data");
+      console.error(err);
+      toast.error("Failed to fetch uploads");
       setUploads([]);
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
     fetchUserFileUploads();
   }, []);
 
-  // Pagination Logic
-  console.log(uploads.length,'length')
-  const totalPages = Math.ceil(uploads.length / itemsPerPage);
-  const paginatedData = uploads.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-  console.log(totalPages,'totalPages')
-
-  // Handle CSV Export
-  const handleExport = () => {
-    if (!uploads.length) {
-      toast.error("No files to export.");
-      return;
+  // Sorting
+  const handleSort = (key: string) => {
+    if (sortConfig?.key === key) {
+      setSortConfig({ key, direction: sortConfig.direction === "asc" ? "desc" : "asc" });
+    } else {
+      setSortConfig({ key, direction: "asc" });
     }
+  };
+
+  const sortedFilteredData = useMemo(() => {
+    let filtered = [...uploads];
+
+    // Date filter
+    if (fromDate) filtered = filtered.filter(u => new Date(u.added_on) >= new Date(fromDate));
+    if (toDate) filtered = filtered.filter(u => new Date(u.added_on) <= new Date(toDate));
+
+    // Search filter
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(u =>
+        String(u.batch_id).toLowerCase().includes(term) ||
+        u.bulk_type.toLowerCase().includes(term) ||
+        u.file_name.toLowerCase().includes(term) ||
+        (u.added_by || "").toLowerCase().includes(term)
+      );
+    }
+
+    // Sorting
+    if (sortConfig) {
+      filtered.sort((a, b) => {
+        const aValue = a[sortConfig.key as keyof UserFileUpload];
+        const bValue = b[sortConfig.key as keyof UserFileUpload];
+        if (aValue == null) return 1;
+        if (bValue == null) return -1;
+        if (typeof aValue === "string" && typeof bValue === "string") {
+          return sortConfig.direction === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
+        }
+        return sortConfig.direction === "asc" ? Number(aValue) - Number(bValue) : Number(bValue) - Number(aValue);
+      });
+    }
+
+    return filtered;
+  }, [uploads, searchTerm, fromDate, toDate, sortConfig]);
+
+  const totalPages = Math.ceil(sortedFilteredData.length / itemsPerPage);
+  const paginatedData = sortedFilteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  // CSV Export
+  const handleExport = () => {
+    if (!uploads.length) return toast.error("No files to export.");
     const header = ["Batch ID", "Bulk Type", "File Name", "File Path", "Status", "Added By", "Added On"];
-    const rows = uploads.map((u) => [
+    const rows = sortedFilteredData.map(u => [
       u.batch_id,
       u.bulk_type,
       u.file_name,
@@ -93,15 +127,14 @@ export default function UserFileUploads() {
       u.added_by || "N/A",
       new Date(u.added_on).toLocaleString(),
     ]);
+    const csvContent = [header, ...rows].map(r => r.map(f => `"${f}"`).join(",")).join("\n");
+    saveAs(new Blob([csvContent], { type: "text/csv;charset=utf-8;" }), `user_file_uploads_${new Date().toISOString().split("T")[0]}.csv`);
+    toast.success("Exported CSV successfully!");
+  };
 
-    const csvContent = [header, ...rows]
-      .map((r) => r.map((field) => `"${field}"`).join(","))
-      .join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const dateStr = new Date().toISOString().split("T")[0];
-    saveAs(blob, `user_file_uploads_${dateStr}.csv`);
-    toast.success("Exported CSV file successfully!");
+  const getArrow = (key: string) => {
+    if (!sortConfig || sortConfig.key !== key) return null;
+    return sortConfig.direction === "asc" ? <ArrowUp className="inline w-3 h-3 ml-1" /> : <ArrowDown className="inline w-3 h-3 ml-1" />;
   };
 
   return (
@@ -123,6 +156,30 @@ export default function UserFileUploads() {
           </div>
         </div>
 
+        {/* Filters */}
+        <div className="flex flex-col sm:flex-row gap-2 items-center">
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="border rounded p-2 flex-1"
+          />
+          <input
+            type="date"
+            value={fromDate}
+            onChange={e => setFromDate(e.target.value)}
+            className="border rounded p-2"
+          />
+          <input
+            type="date"
+            value={toDate}
+            onChange={e => setToDate(e.target.value)}
+            className="border rounded p-2"
+          />
+          <Button onClick={() => {setFromDate(""); setToDate("");}} >Clear Dates</Button>
+        </div>
+
         {/* Modal */}
         <UserFileModal
           open={isModalOpen}
@@ -141,15 +198,29 @@ export default function UserFileUploads() {
               <thead className="bg-gray-100">
                 <tr>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch ID</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Bulk Type</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Name</th>
+                  <th onClick={() => handleSort("batch_id")} className="cursor-pointer px-4 py-2 text-left text-sm font-medium text-gray-700">
+                    Batch ID {getArrow("batch_id")}
+                  </th>
+                  <th onClick={() => handleSort("bulk_type")} className="cursor-pointer px-4 py-2 text-left text-sm font-medium text-gray-700">
+                    Bulk Type {getArrow("bulk_type")}
+                  </th>
+                  <th onClick={() => handleSort("file_name")} className="cursor-pointer px-4 py-2 text-left text-sm font-medium text-gray-700">
+                    File Name {getArrow("file_name")}
+                  </th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Path</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
+                  <th onClick={() => handleSort("status")} className="cursor-pointer px-4 py-2 text-left text-sm font-medium text-gray-700">
+                    Status {getArrow("status")}
+                  </th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total Count</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added By</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Added On</th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Completed At</th>
+                  <th onClick={() => handleSort("added_by")} className="cursor-pointer px-4 py-2 text-left text-sm font-medium text-gray-700">
+                    Added By {getArrow("added_by")}
+                  </th>
+                  <th onClick={() => handleSort("added_on")} className="cursor-pointer px-4 py-2 text-left text-sm font-medium text-gray-700">
+                    Added On {getArrow("added_on")}
+                  </th>
+                  <th onClick={() => handleSort("completed_at")} className="cursor-pointer px-4 py-2 text-left text-sm font-medium text-gray-700">
+                    Completed At {getArrow("completed_at")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -163,56 +234,29 @@ export default function UserFileUploads() {
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.bulk_type}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_name}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_path}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                        {file.status === 1 ? "Completed" : "Pending"}
-                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.status === 1 ? "Completed" : "Pending"}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.total_count}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.added_by}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(file.added_on).toLocaleString()}
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
-                        {file.completed_at ? new Date(file.completed_at).toLocaleString() : "N/A"}
-                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{new Date(file.added_on).toLocaleString()}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{file.completed_at ? new Date(file.completed_at).toLocaleString() : "N/A"}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={10} className="text-center text-gray-500 py-4">
-                      No uploads found
-                    </td>
+                    <td colSpan={10} className="text-center text-gray-500 py-4">No uploads found</td>
                   </tr>
                 )}
               </tbody>
             </table>
 
-            {/* Pagination Controls */}
-          {/* Pagination Controls */}
-{totalPages > 0 && (
-  <div className="flex justify-center items-center gap-6 p-4 bg-gray-50 border-t">
-    <Button
-      variant="outline"
-      size="sm"
-      disabled={currentPage === 1}
-      onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-    >
-      Previous
-    </Button>
-
-    <span className="text-sm font-medium text-gray-700">
-      Page {currentPage} of {totalPages || 1}
-    </span>
-
-    <Button
-      variant="outline"
-      size="sm"
-      disabled={currentPage === totalPages}
-      onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-    >
-      Next
-    </Button>
-  </div>
-)}
+            {/* Pagination */}
+            {totalPages > 0 && (
+              <div className="flex justify-center items-center gap-6 p-4 bg-gray-50 border-t">
+                <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}>Previous</Button>
+                <span className="text-sm font-medium text-gray-700">Page {currentPage} of {totalPages || 1}</span>
+                <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}>Next</Button>
+              </div>
+            )}
           </div>
         )}
       </div>
