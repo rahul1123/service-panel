@@ -44,7 +44,7 @@ const menuItems = [
    {
     title: "Bulk Upload - Customers",
     url: "/upload-customers",
-    icon: BarChart3,
+    icon: Users,
     roles: ["admin","customer"],
   },
    
@@ -52,31 +52,31 @@ const menuItems = [
   {
     title: "Bulk Upload - Users",
     url: "/upload-users",
-    icon: BarChart3,
+    icon: Users,
     roles: ["admin","customer"],
   },
   {
     title: "List Users",
     url: "/list-users",
-    icon: BarChart3,
+    icon: Users,
     roles: ["admin","customer"],
   },
   {
     title: "List Customers",
     url: "/list-customers",
-    icon: BarChart3,
+    icon: Users,
     roles: ["admin","customer"],
   },
   {
      title: "App/Customer Onboarding",
      url: "/create-app-customer",
-     icon: BarChart3,
+     icon:Users,
      roles: ["admin"],
   },
   {
      title: "App/Customer Listing",
      url: "/list-app-user",
-     icon: BarChart3,
+     icon: Users,
      roles: ["admin"],
   }
    
