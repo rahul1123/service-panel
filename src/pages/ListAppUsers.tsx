@@ -164,6 +164,8 @@ export default function CustomerFileUploads() {
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Name</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Email</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Mobile</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">App Name</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Api Key</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Role</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
@@ -177,6 +179,8 @@ export default function CustomerFileUploads() {
                       <td className="px-4 py-2 text-sm">{u.name || "—"}</td>
                       <td className="px-4 py-2 text-sm">{u.email || "—"}</td>
                       <td className="px-4 py-2 text-sm">{u.mobile || "—"}</td>
+                      <td className="px-4 py-2 text-sm">{u.app_name || "—"}</td>
+                      <td className="px-4 py-2 text-sm">{u.api_key || "—"}</td>
                       <td className="px-4 py-2 text-sm">{u.status || "—"}</td>
                       <td className="px-4 py-2 text-sm">{u.role || "—"}</td>
                       <td className="px-4 py-2 text-sm">{new Date(u.added_on).toLocaleString()}</td>
