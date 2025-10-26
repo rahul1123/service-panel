@@ -25,18 +25,7 @@ export default function CustomerFileUploads() {
       status: "N/A",
       message: "API failed, showing dummy data",
       created_at: "2025-10-23T18:22:49.000Z",
-    },
-    {
-      id: 2,
-      batch_id: 123,
-      primaryEmail: "backup@example.com",
-      Username: "BackupUser",
-      password: "******",
-      creationId: "DUMMY-002",
-      status: "N/A",
-      message: "Fallback record",
-      created_at: "2025-10-22T16:11:45.000Z",
-    },
+    }
   ];
 
   const fetchCustomer = async () => {
@@ -48,7 +37,7 @@ export default function CustomerFileUploads() {
 
       if (!token) {
         toast.error("No valid token found. Please log in again.");
-        setUploads(dummyData);
+       // setUploads(dummyData);
         return;
       }
 
@@ -106,9 +95,9 @@ export default function CustomerFileUploads() {
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">App Name</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Domain</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">maxUnits</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch Id</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Customer Id</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Licenses</th>
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch Id</th>                    
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status Code</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Response</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
@@ -134,9 +123,9 @@ export default function CustomerFileUploads() {
                         <td className="px-4 py-2 text-sm">{startIndex + i + 1}</td>
                         <td className="px-4 py-2 text-sm">{u.app_name || "—"}</td>
                         <td className="px-4 py-2 text-sm">{domain || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{maxUnits || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{batch_id || "—"}</td>
                         <td className="px-4 py-2 text-sm">{customerId || "—"}</td>
+                        <td className="px-4 py-2 text-sm">{maxUnits || "—"}</td>
+                        <td className="px-4 py-2 text-sm">{batch_id || "—"}</td>                        
                         <td className="px-4 py-2 text-sm">{u.status_code || "—"}</td>
                         <td className="px-4 py-2 text-sm">{responseText || "—"}</td>
                         <td className="px-4 py-2 text-sm">

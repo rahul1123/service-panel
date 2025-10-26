@@ -37,7 +37,7 @@ const Index = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-slate-800">
-              Dashboard
+              Dashboard(GWS)
             </h1>
           </div>
        

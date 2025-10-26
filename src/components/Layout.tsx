@@ -37,42 +37,48 @@ const menuItems = [
     title: "Dashboard",
     url: "/",
     icon: Home,
-    roles: ["admin","reseller"],
+    roles: ["admin","customer"],
     // roles: ["SuperAdmin","admin", "Interviewer", "Recruiter"],
   },
 
    {
-    title: "Upload File For Customers",
+    title: "Bulk Upload - Customers",
     url: "/upload-customers",
     icon: BarChart3,
-    roles: ["admin"],
+    roles: ["admin","customer"],
   },
    
  
   {
-    title: "Upload File For Users",
+    title: "Bulk Upload - Users",
     url: "/upload-users",
     icon: BarChart3,
-    roles: ["admin"],
+    roles: ["admin","customer"],
   },
   {
     title: "List Users",
     url: "/list-users",
     icon: BarChart3,
-    roles: ["admin"],
+    roles: ["admin","customer"],
   },
   {
     title: "List Customers",
     url: "/list-customers",
     icon: BarChart3,
-    roles: ["admin"],
+    roles: ["admin","customer"],
   },
-  //  {
-  //   title: "Application",
-  //   url: "/application",
-  //   icon: BarChart3,
-  //   roles: ["admin","reseller"],
-  // },
+  {
+     title: "App/Customer Onboarding",
+     url: "/application",
+     icon: BarChart3,
+     roles: ["admin"],
+  },
+  {
+     title: "App/Customer Listing",
+     url: "/application",
+     icon: BarChart3,
+     roles: ["admin"],
+  }
    
 ];
 

@@ -42,7 +42,7 @@ export default function CustomerFileUploads() {
 
       if (!token) {
         toast.error("No valid token found. Please log in again.");
-        setUser(dummyData);
+       // setUser(dummyData);
         return;
       }
 
@@ -130,7 +130,6 @@ export default function CustomerFileUploads() {
                         <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Primary Email</th>
                         <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Username</th>
                         <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch ID</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status</th>
                         <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Message</th>
                         <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
                       </tr>
@@ -149,9 +148,6 @@ export default function CustomerFileUploads() {
                           </td>
                           <td className="px-4 py-2 text-sm text-gray-900">
                             {file.batch_id || "N/A"}
-                          </td>
-                          <td className="px-4 py-2 text-sm text-gray-900">
-                            {file.status || "N/A"}
                           </td>
                           <td className="px-4 py-2 text-sm text-gray-900">
                             {file.message || "N/A"}
