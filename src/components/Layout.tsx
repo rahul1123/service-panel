@@ -38,17 +38,13 @@ const menuItems = [
     url: "/",
     icon: Home,
     roles: ["admin","customer"],
-    // roles: ["SuperAdmin","admin", "Interviewer", "Recruiter"],
   },
-
    {
     title: "Bulk Upload - Customers",
     url: "/upload-customers",
     icon: Users,
     roles: ["admin","customer"],
   },
-   
- 
   {
     title: "Bulk Upload - Users",
     url: "/upload-users",
@@ -79,23 +75,16 @@ const menuItems = [
      icon: Users,
      roles: ["admin"],
   }
-   
 ];
-
 function AppSidebar() {
   const location = useLocation();
   const { getUserRoles, getUserDetails} = useAuth();
   const userRoles = getUserRoles();
-  console.log(userRoles,getUserDetails, "userRoles");
-
   const filteredMenuItems = menuItems.filter((item) =>
     item.roles.some((role) =>
       userRoles.map((r) => r.toLowerCase()).includes(role.toLowerCase())
     )
   );
-
-  console.log(filteredMenuItems, "filteredMenuItems");
-
   const displayItems =
     filteredMenuItems.length > 0 ? filteredMenuItems : menuItems;
   return (
