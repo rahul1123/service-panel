@@ -19,36 +19,20 @@ export default function CustomerFileUploads() {
   // Date range states
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-
   const { getUserDetails } = useAuth();
 
-  // Dummy fallback data
-  const dummyData = [
-    {
-      id: 1,
-      batch_id: 122,
-      primaryEmail: "dummy@example.com",
-      Username: "DummyUser",
-      password: "******",
-      creationId: "DUMMY-001",
-      status: "Failed to fetch",
-      message: "Showing fallback data",
-      created_at: "2025-10-23T18:22:49.000Z",
-    },
-  ];
-
-  // 🟢 Fetch all users (with optional filters)
+  // 🟢 Fetch users
   const fetchUser = async (isFiltered = false) => {
     setLoading(true);
     try {
       const userDetails = getUserDetails();
       const token = userDetails?.token;
+
       if (!token) {
         toast.error("No valid token found. Please log in again.");
         return;
       }
 
-      // Build URL with filters
       let url = `${API_BASE_URL}/list/users`;
       if (isFiltered && fromDate && toDate) {
         url += `?from=${fromDate}&to=${toDate}`;
@@ -62,8 +46,8 @@ export default function CustomerFileUploads() {
       const { data } = await axios.get(url, { headers });
       setUser(data?.length ? data : []);
     } catch (err) {
-      console.error("Failed to fetch users, showing dummy data", err);
-      toast.error("Failed to fetch users, showing dummy data");
+      console.error("Failed to fetch users:", err);
+      toast.error("Failed to fetch users");
       setUser([]);
     } finally {
       setLoading(false);
@@ -102,36 +86,47 @@ export default function CustomerFileUploads() {
     return pages;
   };
 
-  // 📤 Export CSV
+  // 📤 Export CSV (Fixed)
   const handleExport = () => {
-    if (!user.length) {
-      toast.error("No data to export");
+    if (loading) {
+      toast.error("Please wait, data is still loading...");
       return;
     }
 
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      [
-        ["#", "Primary Email", "Username", "Batch ID", "Message", "Created At"].join(","),
-        ...user.map((file, index) =>
-          [
-            index + 1,
-            file.primaryEmail,
-            file.Username,
-            file.batch_id || "N/A",
-            file.message || "N/A",
-            new Date(file.created_at).toLocaleString(),
-          ].join(",")
-        ),
-      ].join("\n");
+    if (!user || user.length === 0) {
+      toast.error("No user data available to export");
+      return;
+    }
 
-    const encodedUri = encodeURI(csvContent);
+    console.log("Exporting users:", user);
+
+    const headers = ["#", "Primary Email", "Username", "Batch ID", "Message", "Created At"];
+    const rows = user.map((file, index) => [
+      index + 1,
+      file.primaryEmail || "",
+      file.Username || "",
+      file.batch_id || "",
+      file.message || "",
+      file.created_at ? new Date(file.created_at).toLocaleString() : "",
+    ]);
+
+    const escapeCSV = (value: any) => {
+      if (value == null) return "";
+      const str = String(value);
+      return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+    };
+
+    const csv = [headers, ...rows]
+      .map((row) => row.map(escapeCSV).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "user_list.csv");
-    document.body.appendChild(link);
+    link.href = url;
+    link.download = "user_list.csv";
     link.click();
-    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -203,11 +198,21 @@ export default function CustomerFileUploads() {
                     <thead className="bg-gray-100">
                       <tr>
                         <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Primary Email</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Username</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch ID</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Message</th>
-                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                          Primary Email
+                        </th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                          Username
+                        </th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                          Batch ID
+                        </th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                          Message
+                        </th>
+                        <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                          Created At
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
@@ -218,8 +223,12 @@ export default function CustomerFileUploads() {
                           </td>
                           <td className="px-4 py-2 text-sm text-gray-900">{file.primaryEmail}</td>
                           <td className="px-4 py-2 text-sm text-gray-900">{file.Username}</td>
-                          <td className="px-4 py-2 text-sm text-gray-900">{file.batch_id || "N/A"}</td>
-                          <td className="px-4 py-2 text-sm text-gray-900">{file.message || "N/A"}</td>
+                          <td className="px-4 py-2 text-sm text-gray-900">
+                            {file.batch_id || "N/A"}
+                          </td>
+                          <td className="px-4 py-2 text-sm text-gray-900">
+                            {file.message || "N/A"}
+                          </td>
                           <td className="px-4 py-2 text-sm text-gray-500">
                             {new Date(file.created_at).toLocaleString()}
                           </td>
