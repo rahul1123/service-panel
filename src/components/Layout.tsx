@@ -75,7 +75,7 @@ const menuItems = [
   },
   {
      title: "App/Customer Listing",
-     url: "/application",
+     url: "/list-app-user",
      icon: BarChart3,
      roles: ["admin"],
   }
