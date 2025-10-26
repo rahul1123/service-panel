@@ -19,7 +19,6 @@ export default function CustomerFileUploads() {
   "All Services": 
     "/api/v1/login,/api/v1/create/reseller/customer,/api/v1/create/customer/users,/api/v1/update/customer/users,/api/v1/customer/details,/api/v1/list/customer/users,/api/v1/panel/login,/api/v1/panel/customer/upload,/api/v1/panel/user/upload,/api/v1/panel/customer/create",
 };
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -30,10 +29,9 @@ export default function CustomerFileUploads() {
     api_username: "",
     api_password: "",
     services: "",
-    status: "active",
-    role: "admin",
+  status: "active", // default
+  role: "customer", // default
   });
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.name.trim()) newErrors.name = "Name is required.";
@@ -45,39 +43,32 @@ export default function CustomerFileUploads() {
     if (!formData.services.trim()) newErrors.services = "Please select a service type.";
     return newErrors;
   };
-
   const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setErrors({ ...errors, [e.target.name]: "" });
   };
-
   const handleServiceTypeChange = (e: any) => {
     const value = e.target.value;
     setSelectedServiceType(value);
     setFormData({ ...formData, services: serviceOptions[value] || "" });
     setErrors({ ...errors, services: "" });
   };
-
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     const validationErrors = validateForm();
-
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       toast.error("Please fill all required fields correctly.");
       return;
     }
-
     setLoading(true);
     try {
       const user = getUserDetails();
       const token = user?.token;
-
       if (!token) {
         toast.error("No valid token found. Please log in again.");
         return;
       }
-
       await axios.post(`https://gwsapi.amyntas.in/api/v1/admin/create/app`, formData, {
         headers: {
           "Content-Type": "application/json",
@@ -96,8 +87,8 @@ export default function CustomerFileUploads() {
         api_username: "",
         api_password: "",
         services: "",
-        status: "active",
-        role: "admin",
+        status: "",
+        role: "",
       });
       setSelectedServiceType("");
       setErrors({});
@@ -110,7 +101,7 @@ export default function CustomerFileUploads() {
   };
 const generateApiKey = () => {
   // Simple random API key generator (32 characters)
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
   let key = "";
   for (let i = 0; i < 32; i++) {
     key += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -208,7 +199,7 @@ const generateApiKey = () => {
       onClick={generateApiKey}
       className="ml-2 text-sm px-3 py-2"
     >
-      Generate
+      Generate Key
     </Button>
   </div>
   {errors.api_key && <p className="text-red-500 text-sm mt-1">{errors.api_key}</p>}
