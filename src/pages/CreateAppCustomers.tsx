@@ -11,13 +11,14 @@ export default function CustomerFileUploads() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedServiceType, setSelectedServiceType] = useState("");
-
-  const serviceOptions: Record<string, string> = {
-    "API CONSUMER Services":
-      "/api/v1/login,/api/v1/create/reseller/customer,/api/v1/create/customer/users,/api/v1/update/customer/users,/api/v1/customer/details,/api/v1/list/customer/users",
-    "PANEL Customer Services":
-      "/api/v1/panel/login,/api/v1/panel/customer/upload,/api/v1/panel/user/upload,/api/v1/panel/customer/create",
-  };
+ const serviceOptions: Record<string, string> = {
+  "API CONSUMER Services":
+    "/api/v1/login,/api/v1/create/reseller/customer,/api/v1/create/customer/users,/api/v1/update/customer/users,/api/v1/customer/details,/api/v1/list/customer/users",
+  "PANEL Customer Services":
+    "/api/v1/panel/login,/api/v1/panel/customer/upload,/api/v1/panel/user/upload,/api/v1/panel/customer/create",
+  "All Services": 
+    "/api/v1/login,/api/v1/create/reseller/customer,/api/v1/create/customer/users,/api/v1/update/customer/users,/api/v1/customer/details,/api/v1/list/customer/users,/api/v1/panel/login,/api/v1/panel/customer/upload,/api/v1/panel/user/upload,/api/v1/panel/customer/create",
+};
 
   const [formData, setFormData] = useState({
     name: "",
@@ -77,14 +78,13 @@ export default function CustomerFileUploads() {
         return;
       }
 
-      await axios.post(`${API_BASE_URL}/admin/create/app`, formData, {
+      await axios.post(`https://gwsapi.amyntas.in/api/v1/admin/create/app`, formData, {
         headers: {
           "Content-Type": "application/json",
           "x-api-key": formData.api_key,
           Authorization: `Bearer ${token}`,
         },
       });
-
       toast.success("App user created successfully!");
       setFormData({
         name: "",
@@ -108,7 +108,16 @@ export default function CustomerFileUploads() {
       setLoading(false);
     }
   };
-
+const generateApiKey = () => {
+  // Simple random API key generator (32 characters)
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let key = "";
+  for (let i = 0; i < 32; i++) {
+    key += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  setFormData({ ...formData, api_key: key });
+  setErrors({ ...errors, api_key: "" }); // clear any previous errors
+};
   return (
     <Layout>
       <div className="space-y-6">
@@ -184,17 +193,26 @@ export default function CustomerFileUploads() {
           </div>
 
           {/* API Key */}
-          <div>
-            <label className="block text-sm font-medium">API Key</label>
-            <input
-              type="text"
-              name="api_key"
-              value={formData.api_key}
-              onChange={handleChange}
-              className="w-full border rounded-md p-2"
-            />
-            {errors.api_key && <p className="text-red-500 text-sm">{errors.api_key}</p>}
-          </div>
+      <div className="w-full">
+  <label className="block text-sm font-medium mb-1">API Key</label>
+  <div className="flex">
+    <input
+      type="text"
+      name="api_key"
+      value={formData.api_key}
+      onChange={handleChange}
+      className="flex-1 border rounded-md p-2 pr-24" // extra right padding so text doesn't go under button
+    />
+    <Button
+      type="button"
+      onClick={generateApiKey}
+      className="ml-2 text-sm px-3 py-2"
+    >
+      Generate
+    </Button>
+  </div>
+  {errors.api_key && <p className="text-red-500 text-sm mt-1">{errors.api_key}</p>}
+</div>
 
           {/* API Username */}
           <div>
@@ -212,7 +230,7 @@ export default function CustomerFileUploads() {
           <div>
             <label className="block text-sm font-medium">API Password</label>
             <input
-              type="text"
+              type="password"
               name="api_password"
               value={formData.api_password}
               onChange={handleChange}
@@ -273,7 +291,7 @@ export default function CustomerFileUploads() {
               onChange={handleChange}
               className="w-full border rounded-md p-2"
             >
-              <option value="admin">Admin</option>
+              <option value="customer">Customer</option>
               <option value="user">User</option>
             </select>
           </div>

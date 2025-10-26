@@ -16,7 +16,6 @@ const ListUsers = lazy(() => import("./pages/ListUsers"));
 const ListCustomers = lazy(() => import("./pages/ListCustomer"));
 const CreateAppCustomers = lazy(() => import("./pages/CreateAppCustomers"));
 const ListAppUsers = lazy(() => import("./pages/ListAppUsers"));
-
 const Applications = lazy(() => import("./pages/Application"));
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
