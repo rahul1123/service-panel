@@ -14,6 +14,7 @@ const Users = lazy(() => import("./pages/Users"));
 const Customers = lazy(() => import("./pages/Customer"));
 const ListUsers = lazy(() => import("./pages/ListUsers"));
 const ListCustomers = lazy(() => import("./pages/ListCustomer"));
+const CreateAppCustomers = lazy(() => import("./pages/CreateAppCustomers"));
 const ListAppUsers = lazy(() => import("./pages/ListAppUsers"));
 
 const Applications = lazy(() => import("./pages/Application"));
@@ -90,10 +91,10 @@ const App = () => (
               />
 
                  <Route
-                path="/list-customers"
+                path="/create-app-customer"
                 element={
                   <ProtectedRoute>
-                    <ListCustomers/>
+                    <CreateAppCustomers/>
                   </ProtectedRoute>
                 }
               />

@@ -69,7 +69,7 @@ const menuItems = [
   },
   {
      title: "App/Customer Onboarding",
-     url: "/application",
+     url: "/create-app-customer",
      icon: BarChart3,
      roles: ["admin"],
   },
