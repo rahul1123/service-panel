@@ -8,13 +8,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 export default function CustomerFileUploads() {
-  const [user, setUser] = useState([]);
+  const [user, setUser] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Date range states
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const { getUserDetails } = useAuth();
 
@@ -33,28 +37,29 @@ export default function CustomerFileUploads() {
     },
   ];
 
-  // 🟢 Fetch all users
-  const fetchUser = async () => {
+  // 🟢 Fetch all users (with optional filters)
+  const fetchUser = async (isFiltered = false) => {
     setLoading(true);
     try {
       const userDetails = getUserDetails();
       const token = userDetails?.token;
-
       if (!token) {
         toast.error("No valid token found. Please log in again.");
-       // setUser(dummyData);
         return;
       }
 
-      const url = `${API_BASE_URL}/list/users`;
+      // Build URL with filters
+      let url = `${API_BASE_URL}/list/users`;
+      if (isFiltered && fromDate && toDate) {
+        url += `?from=${fromDate}&to=${toDate}`;
+      }
+
       const headers = {
         "x-api-key": "f7ab26185b14fc87db613850887be3b8",
         Authorization: `Bearer ${token}`,
       };
 
       const { data } = await axios.get(url, { headers });
-      console.log("User list response:", data);
-
       setUser(data?.length ? data : []);
     } catch (err) {
       console.error("Failed to fetch users, showing dummy data", err);
@@ -82,10 +87,9 @@ export default function CustomerFileUploads() {
 
   const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1); // reset to first page
+    setCurrentPage(1);
   };
 
-  // Helper for visible page numbers (max 5 buttons)
   const getVisiblePages = () => {
     const pages = [];
     const maxVisible = 5;
@@ -98,12 +102,84 @@ export default function CustomerFileUploads() {
     return pages;
   };
 
+  // 📤 Export CSV
+  const handleExport = () => {
+    if (!user.length) {
+      toast.error("No data to export");
+      return;
+    }
+
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      [
+        ["#", "Primary Email", "Username", "Batch ID", "Message", "Created At"].join(","),
+        ...user.map((file, index) =>
+          [
+            index + 1,
+            file.primaryEmail,
+            file.Username,
+            file.batch_id || "N/A",
+            file.message || "N/A",
+            new Date(file.created_at).toLocaleString(),
+          ].join(",")
+        ),
+      ].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "user_list.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <Layout>
       <div className="space-y-4">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        {/* Header & Filters */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-800">List Users</h1>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600">From:</label>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="border border-gray-300 rounded-md text-sm p-1"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600">To:</label>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="border border-gray-300 rounded-md text-sm p-1"
+              />
+            </div>
+
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => fetchUser(true)}
+              disabled={!fromDate || !toDate || loading}
+            >
+              {loading ? "Searching..." : "Search"}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExport}
+              disabled={loading || !user.length}
+            >
+              Export CSV
+            </Button>
+          </div>
         </div>
 
         {/* Modal */}
@@ -115,7 +191,7 @@ export default function CustomerFileUploads() {
           setEditingFileUpload={() => {}}
         />
 
-        {/* Table */}
+        {/* Table Section */}
         {loading ? (
           <div className="text-center text-gray-500 py-4">Loading users...</div>
         ) : (
@@ -140,18 +216,10 @@ export default function CustomerFileUploads() {
                           <td className="px-4 py-2 text-sm text-gray-900">
                             {startIndex + index + 1}
                           </td>
-                          <td className="px-4 py-2 text-sm text-gray-900">
-                            {file.primaryEmail}
-                          </td>
-                          <td className="px-4 py-2 text-sm text-gray-900">
-                            {file.Username}
-                          </td>
-                          <td className="px-4 py-2 text-sm text-gray-900">
-                            {file.batch_id || "N/A"}
-                          </td>
-                          <td className="px-4 py-2 text-sm text-gray-900">
-                            {file.message || "N/A"}
-                          </td>
+                          <td className="px-4 py-2 text-sm text-gray-900">{file.primaryEmail}</td>
+                          <td className="px-4 py-2 text-sm text-gray-900">{file.Username}</td>
+                          <td className="px-4 py-2 text-sm text-gray-900">{file.batch_id || "N/A"}</td>
+                          <td className="px-4 py-2 text-sm text-gray-900">{file.message || "N/A"}</td>
                           <td className="px-4 py-2 text-sm text-gray-500">
                             {new Date(file.created_at).toLocaleString()}
                           </td>
@@ -161,7 +229,7 @@ export default function CustomerFileUploads() {
                   </table>
                 </div>
 
-                {/* Pagination Controls */}
+                {/* Pagination */}
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-4 py-4">
                   <div className="flex items-center gap-2">
                     <Button
@@ -196,7 +264,6 @@ export default function CustomerFileUploads() {
                     </Button>
                   </div>
 
-                  {/* Page size selector */}
                   <div className="flex items-center gap-2">
                     <label className="text-sm text-gray-600">Items per page:</label>
                     <select

@@ -8,25 +8,14 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function CustomerFileUploads() {
   const [uploads, setUploads] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const { getUserDetails } = useAuth();
-
-  const dummyData = [
-    {
-      id: 1,
-      batch_id: 122,
-      primaryEmail: "dummy@example.com",
-      Username: "DummyUser",
-      password: "******",
-      creationId: "DUMMY-001",
-      status: "N/A",
-      message: "API failed, showing dummy data",
-      created_at: "2025-10-23T18:22:49.000Z",
-    }
-  ];
 
   const fetchCustomer = async () => {
     setLoading(true);
@@ -37,7 +26,6 @@ export default function CustomerFileUploads() {
 
       if (!token) {
         toast.error("No valid token found. Please log in again.");
-       // setUploads(dummyData);
         return;
       }
 
@@ -49,10 +37,12 @@ export default function CustomerFileUploads() {
 
       const { data } = await axios.get(url, { headers });
       setUploads(data?.length ? data : []);
+      setFilteredData(data?.length ? data : []);
     } catch (err) {
       console.error("Failed to fetch customers", err);
-      toast.error("Failed to fetch customers, showing dummy data");
+      toast.error("Failed to fetch customers");
       setUploads([]);
+      setFilteredData([]);
     } finally {
       setLoading(false);
     }
@@ -62,18 +52,86 @@ export default function CustomerFileUploads() {
     fetchCustomer();
   }, []);
 
+  // Apply Date Filter
+  const applyDateFilter = () => {
+    if (!fromDate || !toDate) {
+      toast.error("Please select both From and To dates");
+      return;
+    }
+
+    const filtered = uploads.filter((u) => {
+      const createdAt = new Date(u.created_at);
+      return (
+        createdAt >= new Date(fromDate) && createdAt <= new Date(toDate)
+      );
+    });
+
+    setFilteredData(filtered);
+    setCurrentPage(1);
+  };
+
+  // Export to CSV
+  const exportToCSV = () => {
+    if (!filteredData.length) {
+      toast.error("No data available to export");
+      return;
+    }
+
+    const headers = [
+      "App Name",
+      "Domain",
+      "Customer Id",
+      "Licenses",
+      "Batch Id",
+      "Status Code",
+      "Response",
+      "Created At",
+    ];
+
+    const csvContent = [
+      headers.join(","),
+      ...filteredData.map((u) => {
+        let domain = "",
+          maxUnits = "",
+          batch_id = "",
+          customerId = "";
+        try {
+          const reqBody = JSON.parse(u.request_body || "{}");
+          domain = reqBody.domain || "";
+          maxUnits = reqBody.maxUnits || "";
+          batch_id = reqBody.batch_id || "";
+          customerId = reqBody.customerId || "";
+        } catch {}
+
+        const responseText = u.status_code === 200 ? "ok" : u.response_body;
+
+        return [
+          u.app_name || "",
+          domain,
+          customerId,
+          maxUnits,
+          batch_id,
+          u.status_code,
+          responseText,
+          new Date(u.created_at).toLocaleString(),
+        ]
+          .map((v) => `"${v}"`)
+          .join(",");
+      }),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `customers_${new Date().toISOString()}.csv`;
+    a.click();
+  };
+
   // Pagination logic
-  const totalPages = Math.ceil(uploads.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = uploads.slice(startIndex, startIndex + itemsPerPage);
-
-  const handleNext = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
-  };
-
-  const handlePrev = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
+  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   return (
     <Layout>
@@ -82,8 +140,41 @@ export default function CustomerFileUploads() {
           <h1 className="text-2xl font-bold text-slate-800">List Customers</h1>
         </div>
 
+        {/* Date Filter & Export */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-3 items-center">
+            <div>
+              <label className="block text-sm text-gray-600">From Date</label>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => setFromDate(e.target.value)}
+                className="border border-gray-300 rounded-md p-2 text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-600">To Date</label>
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => setToDate(e.target.value)}
+                className="border border-gray-300 rounded-md p-2 text-sm"
+              />
+            </div>
+            <Button variant="outline" onClick={applyDateFilter}>
+              Filter
+            </Button>
+          </div>
+
+          <Button onClick={exportToCSV} className="bg-blue-600 text-white">
+            Export CSV
+          </Button>
+        </div>
+
         {loading && (
-          <div className="text-center text-gray-500 py-4">Loading customers...</div>
+          <div className="text-center text-gray-500 py-4">
+            Loading customers...
+          </div>
         )}
 
         {!loading && (
@@ -97,7 +188,7 @@ export default function CustomerFileUploads() {
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Domain</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Customer Id</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Licenses</th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch Id</th>                    
+                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Batch Id</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Status Code</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Response</th>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Created At</th>
@@ -105,29 +196,45 @@ export default function CustomerFileUploads() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {paginatedData.map((u, i) => {
-                    let [domain, maxUnits, batch_id, customerId] = ["", "", "", ""];
+                    let domain = "",
+                      maxUnits = "",
+                      batch_id = "",
+                      customerId = "";
                     try {
                       const reqBody = JSON.parse(u.request_body || "{}");
                       domain = reqBody.domain || "";
                       maxUnits = reqBody.maxUnits || "";
                       batch_id = reqBody.batch_id || "";
                       customerId = reqBody.customerId || "";
-                    } catch (err) {
-                      console.error("Invalid JSON in request_body", err);
-                    }
+                    } catch {}
 
-                    const responseText = u.status_code === 200 ? "ok" : u.response_body;
+                    const responseText =
+                      u.status_code === 200 ? "ok" : u.response_body;
 
                     return (
                       <tr key={u.id}>
-                        <td className="px-4 py-2 text-sm">{startIndex + i + 1}</td>
-                        <td className="px-4 py-2 text-sm">{u.app_name || "—"}</td>
+                        <td className="px-4 py-2 text-sm">
+                          {startIndex + i + 1}
+                        </td>
+                        <td className="px-4 py-2 text-sm">
+                          {u.app_name || "—"}
+                        </td>
                         <td className="px-4 py-2 text-sm">{domain || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{customerId || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{maxUnits || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{batch_id || "—"}</td>                        
-                        <td className="px-4 py-2 text-sm">{u.status_code || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{responseText || "—"}</td>
+                        <td className="px-4 py-2 text-sm">
+                          {customerId || "—"}
+                        </td>
+                        <td className="px-4 py-2 text-sm">
+                          {maxUnits || "—"}
+                        </td>
+                        <td className="px-4 py-2 text-sm">
+                          {batch_id || "—"}
+                        </td>
+                        <td className="px-4 py-2 text-sm">
+                          {u.status_code || "—"}
+                        </td>
+                        <td className="px-4 py-2 text-sm">
+                          {responseText || "—"}
+                        </td>
                         <td className="px-4 py-2 text-sm">
                           {new Date(u.created_at).toLocaleString()}
                         </td>
@@ -138,11 +245,11 @@ export default function CustomerFileUploads() {
               </table>
             </div>
 
-            {/* Pagination Controls */}
+            {/* Pagination */}
             <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-3">
               <div className="flex items-center gap-2">
                 <Button
-                  onClick={handlePrev}
+                  onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
                   disabled={currentPage === 1}
                   variant="outline"
                 >
@@ -152,7 +259,7 @@ export default function CustomerFileUploads() {
                   Page {currentPage} of {totalPages || 1}
                 </span>
                 <Button
-                  onClick={handleNext}
+                  onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
                   disabled={currentPage === totalPages}
                   variant="outline"
                 >
@@ -166,7 +273,7 @@ export default function CustomerFileUploads() {
                   value={itemsPerPage}
                   onChange={(e) => {
                     setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1); // reset to first page
+                    setCurrentPage(1);
                   }}
                   className="border border-gray-300 rounded-md text-sm p-1"
                 >
