@@ -2,13 +2,6 @@ import Layout from "@/components/Layout";
 import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  ArrowUp,
-  ArrowDown,
-} from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import { API_BASE_URL } from "../config/api";
@@ -22,18 +15,15 @@ export default function ListCustomers() {
   const [toDate, setToDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Sorting
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(
     null
   );
 
   const { getUserDetails } = useAuth();
 
-  // Fetch customers
   const fetchCustomers = async () => {
     setLoading(true);
     try {
@@ -69,7 +59,6 @@ export default function ListCustomers() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Filter by date
   const handleDateFilter = () => {
     if (!fromDate || !toDate) {
       toast.error("Please select both From and To dates");
@@ -92,7 +81,6 @@ export default function ListCustomers() {
     setCurrentPage(1);
   };
 
-  // 🔍 Search filter (includes status_code)
   useEffect(() => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) {
@@ -121,7 +109,6 @@ export default function ListCustomers() {
     setCurrentPage(1);
   }, [searchQuery, customers]);
 
-  // 🔽 Sorting logic
   const handleSort = (key: string) => {
     let direction: "asc" | "desc" = "asc";
     if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
@@ -147,7 +134,6 @@ export default function ListCustomers() {
     });
   }, [filteredCustomers, sortConfig]);
 
-  // Pagination
   const totalPages = Math.ceil(sortedCustomers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = sortedCustomers.slice(startIndex, startIndex + itemsPerPage);
@@ -162,7 +148,6 @@ export default function ListCustomers() {
     return pages;
   };
 
-  // 📤 Export CSV
   const handleExport = () => {
     if (!filteredCustomers.length) {
       toast.error("No data to export");
@@ -230,7 +215,7 @@ export default function ListCustomers() {
 
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center border rounded-md px-2">
-              <Search className="text-slate-400" size={18} />
+              <i className="bi bi-search text-slate-400" />
               <Input
                 placeholder="Search by app, domain, customer id, or status code..."
                 value={searchQuery}
@@ -259,22 +244,12 @@ export default function ListCustomers() {
               />
             </div>
 
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handleDateFilter}
-              disabled={!fromDate || !toDate || loading}
-            >
+            <Button variant="default" size="sm" onClick={handleDateFilter} disabled={!fromDate || !toDate || loading}>
               {loading ? "Filtering..." : "Filter"}
             </Button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-              disabled={loading || !filteredCustomers.length}
-            >
-              Export CSV
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={loading || !filteredCustomers.length}>
+              <i className="bi bi-download me-1"></i> Export CSV
             </Button>
           </div>
         </div>
@@ -311,15 +286,12 @@ export default function ListCustomers() {
                             {col.label}
                             {isSorted ? (
                               isAsc ? (
-                                <ArrowUp className="inline w-4 h-4 ml-1 text-blue-600" />
+                                <i className="bi bi-arrow-up text-blue-600 ms-1"></i>
                               ) : (
-                                <ArrowDown className="inline w-4 h-4 ml-1 text-blue-600" />
+                                <i className="bi bi-arrow-down text-blue-600 ms-1"></i>
                               )
                             ) : (
-                              <div className="flex flex-col ml-1 text-gray-400 leading-none">
-                                <ArrowUp className="w-3 h-3" />
-                                <ArrowDown className="w-3 h-3 -mt-1" />
-                              </div>
+                              <i className="bi bi-arrow-down-up text-gray-400 ms-1"></i>
                             )}
                           </div>
                         </th>
@@ -349,9 +321,7 @@ export default function ListCustomers() {
                         <td className="px-4 py-2 text-sm">{startIndex + index + 1}</td>
                         <td className="px-4 py-2 text-sm">{u.app_name || "—"}</td>
                         <td className="px-4 py-2 text-sm">{u.status_code || "—"}</td>
-                        <td className="px-4 py-2 text-sm">
-                          {new Date(u.created_at).toLocaleString()}
-                        </td>
+                        <td className="px-4 py-2 text-sm">{new Date(u.created_at).toLocaleString()}</td>
                         <td className="px-4 py-2 text-sm">{domain || "—"}</td>
                         <td className="px-4 py-2 text-sm">{customerId || "—"}</td>
                         <td className="px-4 py-2 text-sm">{maxUnits || "—"}</td>
@@ -373,7 +343,7 @@ export default function ListCustomers() {
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => p - 1)}
                 >
-                  <ChevronLeft className="w-4 h-4 mr-1" /> Previous
+                  <i className="bi bi-chevron-left me-1"></i> Previous
                 </Button>
 
                 <div className="flex gap-1">
@@ -395,7 +365,7 @@ export default function ListCustomers() {
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => p + 1)}
                 >
-                  Next <ChevronRight className="w-4 h-4 ml-1" />
+                  Next <i className="bi bi-chevron-right ms-1"></i>
                 </Button>
               </div>
 
