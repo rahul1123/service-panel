@@ -51,7 +51,7 @@ export default function ListCustomers() {
       };
 
       const { data } = await axios.get(url, { headers });
-      const list = data?.length ? data : [];
+      const list = Array.isArray(data) ? data : [];
       setCustomers(list);
       setFilteredCustomers(list);
     } catch (err) {
@@ -66,6 +66,7 @@ export default function ListCustomers() {
 
   useEffect(() => {
     fetchCustomers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Filter by date
@@ -77,6 +78,10 @@ export default function ListCustomers() {
 
     const from = new Date(fromDate);
     const to = new Date(toDate);
+    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+      toast.error("Invalid date range");
+      return;
+    }
 
     const filtered = customers.filter((c) => {
       const createdAt = new Date(c.created_at);
@@ -90,6 +95,11 @@ export default function ListCustomers() {
   // 🔍 Search filter (includes status_code)
   useEffect(() => {
     const q = searchQuery.toLowerCase().trim();
+    if (!q) {
+      setFilteredCustomers(customers);
+      return;
+    }
+
     const filtered = customers.filter((u) => {
       let domain = "";
       let customerId = "";
@@ -103,7 +113,7 @@ export default function ListCustomers() {
         u.app_name?.toLowerCase().includes(q) ||
         domain.toLowerCase().includes(q) ||
         customerId.toLowerCase().includes(q) ||
-        String(u.status_code).toLowerCase().includes(q)
+        String(u.status_code || "").toLowerCase().includes(q)
       );
     });
 
@@ -127,8 +137,8 @@ export default function ListCustomers() {
       let bValue: any = b[sortConfig.key];
 
       if (sortConfig.key === "created_at") {
-        aValue = new Date(aValue).getTime();
-        bValue = new Date(bValue).getTime();
+        aValue = new Date(aValue).getTime() || 0;
+        bValue = new Date(bValue).getTime() || 0;
       }
 
       if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
@@ -206,7 +216,7 @@ export default function ListCustomers() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `customers_${new Date().toISOString()}.csv`;
+    link.download = `customers_${new Date().toISOString().replace(/[:.]/g, "-")}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -279,40 +289,45 @@ export default function ListCustomers() {
                 <thead className="bg-gray-100">
                   <tr>
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
-{[
-  { label: "App Name", key: "app_name" },
-  { label: "Status Code", key: "status_code" },
-  { label: "Created At", key: "created_at" },
-].map((col) => {
-  const isSorted = sortConfig?.key === col.key;
-  const isAsc = sortConfig?.direction === "asc";
-  return (
-    <th
-      key={col.key}
-      onClick={() => handleSort(col.key)}
-      className="cursor-pointer select-none px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
-    >
-      <div className="flex items-center">
-        {col.label}
-        {isSorted ? (
-          isAsc ? (
-            <ArrowUp className="inline w-4 h-4 ml-1 text-blue-600" />
-          ) : (
-            <ArrowDown className="inline w-4 h-4 ml-1 text-blue-600" />
-          )
-        ) : (
-          <div className="ml-1 text-gray-400">
-            <ArrowUp className="w-3 h-3 -mb-1" />
-            <ArrowDown className="w-3 h-3 -mt-1" />
-          </div>
-        )}
-      </div>
-    </th>
-  );
-})}
-
+                    {[
+                      { label: "App Name", key: "app_name" },
+                      { label: "Status Code", key: "status_code" },
+                      { label: "Created At", key: "created_at" },
+                      { label: "Domain", key: "domain" },
+                      { label: "Customer Id", key: "customer_id" },
+                      { label: "Max Unit", key: "max_unit" },
+                      { label: "Batch Id", key: "batch_id" },
+                      { label: "Response", key: "response" },
+                    ].map((col) => {
+                      const isSorted = sortConfig?.key === col.key;
+                      const isAsc = sortConfig?.direction === "asc";
+                      return (
+                        <th
+                          key={col.key}
+                          onClick={() => handleSort(col.key)}
+                          className="cursor-pointer select-none px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                          <div className="flex items-center">
+                            {col.label}
+                            {isSorted ? (
+                              isAsc ? (
+                                <ArrowUp className="inline w-4 h-4 ml-1 text-blue-600" />
+                              ) : (
+                                <ArrowDown className="inline w-4 h-4 ml-1 text-blue-600" />
+                              )
+                            ) : (
+                              <div className="flex flex-col ml-1 text-gray-400 leading-none">
+                                <ArrowUp className="w-3 h-3" />
+                                <ArrowDown className="w-3 h-3 -mt-1" />
+                              </div>
+                            )}
+                          </div>
+                        </th>
+                      );
+                    })}
                   </tr>
                 </thead>
+
                 <tbody className="bg-white divide-y divide-gray-200">
                   {currentData.map((u, index) => {
                     let domain = "",
@@ -327,8 +342,7 @@ export default function ListCustomers() {
                       customerId = reqBody.customerId || "";
                     } catch {}
 
-                    const responseText =
-                      u.status_code === 200 ? "ok" : u.response_body;
+                    const responseText = u.status_code === 200 ? "ok" : u.response_body;
 
                     return (
                       <tr key={u.id || index} className="hover:bg-gray-50">
