@@ -5,15 +5,16 @@ import { API_BASE_URL } from "../config/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-
+import { Input } from "@/components/ui/input";
 export default function CustomerFileUploads() {
   const [user, setUser] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-
+ const [searchQuery, setSearchQuery] = useState("");
+ const [activeFromDate, setActiveFromDate] = useState("");
+  const [activeToDate, setActiveToDate] = useState("");
   // Date filter
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -27,7 +28,7 @@ export default function CustomerFileUploads() {
   const { getUserDetails } = useAuth();
 
   // 🔹 Fetch Users
-  const fetchUser = async (isFiltered = false) => {
+  const fetchUser = async (page = 1, from?: string, to?: string) => {
     setLoading(true);
     try {
       const userDetails = getUserDetails();
@@ -36,18 +37,17 @@ export default function CustomerFileUploads() {
         toast.error("No valid token found. Please log in again.");
         return;
       }
-
+   const today = new Date().toISOString().split("T")[0];
       let url = `${API_BASE_URL}/list/users`;
-      if (isFiltered && fromDate && toDate) {
-        url += `?from=${fromDate}&to=${toDate}`;
-      }
-
       const headers = {
         "x-api-key": "f7ab26185b14fc87db613850887be3b8",
         Authorization: `Bearer ${token}`,
       };
-
-      const { data } = await axios.get(url, { headers });
+  const params: any = {
+        startDate: from || today,
+        endDate: to || today,
+      };
+      const { data } = await axios.get(url, { headers,params });
       setUser(data?.length ? data : []);
     } catch (err) {
       console.error("Failed to fetch users:", err);
@@ -186,6 +186,22 @@ export default function CustomerFileUploads() {
     if (sortConfig?.key !== key) return "↕";
     return sortConfig.direction === "asc" ? "▲" : "▼";
   };
+    const handleDateFilter = () => {
+    if (!fromDate || !toDate) {
+      toast.error("Please select both From and To dates");
+      return;
+    }
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
+    if (isNaN(from.getTime()) || isNaN(to.getTime()) || from > to) {
+      toast.error("Invalid date range");
+      return;
+    }
+    setActiveFromDate(fromDate);
+    setActiveToDate(toDate);
+    setCurrentPage(1);
+    fetchUser(1, fromDate, toDate);
+  };
 
   return (
     <Layout>
@@ -194,17 +210,16 @@ export default function CustomerFileUploads() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-800">List Users</h1>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <input
-              type="text"
-              placeholder="Search by email, username, or batch ID"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="border border-gray-300 rounded-md text-sm p-2"
-            />
+         <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center border rounded-md px-2">
+              <i className="bi bi-search text-slate-400" />
+              <Input
+                placeholder="Search by app, domain, customer id, or status code..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="border-none focus-visible:ring-0 shadow-none w-64"
+              />
+            </div>
 
             <div className="flex items-center gap-2">
               <label className="text-sm text-gray-600">From:</label>
@@ -215,7 +230,6 @@ export default function CustomerFileUploads() {
                 className="border border-gray-300 rounded-md text-sm p-1"
               />
             </div>
-
             <div className="flex items-center gap-2">
               <label className="text-sm text-gray-600">To:</label>
               <input
@@ -226,14 +240,11 @@ export default function CustomerFileUploads() {
               />
             </div>
 
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => fetchUser(true)}
-              disabled={!fromDate || !toDate || loading}
-            >
-              {loading ? "Searching..." : "Search"}
+            <Button onClick={handleDateFilter} disabled={loading} size="sm">
+              {loading ? "Filtering..." : "Filter"}
             </Button>
+          </div>
+        </div>
 
             <Button
               variant="outline"
@@ -244,7 +255,7 @@ export default function CustomerFileUploads() {
               Export CSV
             </Button>
           </div>
-        </div>
+     
 
         {/* Table Section */}
         {loading ? (
@@ -354,7 +365,7 @@ export default function CustomerFileUploads() {
         ) : (
           <div className="text-center text-gray-500 py-4">No users found.</div>
         )}
-      </div>
+     
     </Layout>
   );
 }
