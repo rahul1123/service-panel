@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
@@ -9,7 +9,6 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function ListCustomers() {
   const [customers, setCustomers] = useState<any[]>([]);
-  const [filteredCustomers, setFilteredCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -17,10 +16,9 @@ export default function ListCustomers() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalRecords, setTotalRecords] = useState(0);
 
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(
-    null
-  );
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
 
   const { getUserDetails } = useAuth();
 
@@ -34,21 +32,41 @@ export default function ListCustomers() {
         return;
       }
 
+      const params: any = {
+        page: currentPage,
+        limit: itemsPerPage,
+      };
+
+      if (fromDate && toDate) {
+        params.fromDate = fromDate;
+        params.toDate = toDate;
+      }
+
+      if (searchQuery.trim()) {
+        params.search = searchQuery.trim();
+      }
+
+      if (sortConfig) {
+        params.sortKey = sortConfig.key;
+        params.sortDirection = sortConfig.direction;
+      }
+
       const url = `${API_BASE_URL}/list/customers`;
       const headers = {
         "x-api-key": "f7ab26185b14fc87db613850887be3b8",
         Authorization: `Bearer ${token}`,
       };
 
-      const { data } = await axios.get(url, { headers });
-      const list = Array.isArray(data) ? data : [];
+      const { data } = await axios.get(url, { headers, params });
+
+      const list = Array.isArray(data?.data) ? data.data : [];
       setCustomers(list);
-      setFilteredCustomers(list);
+      setTotalRecords(data?.total || list.length);
     } catch (err) {
       console.error("Failed to fetch customers:", err);
       toast.error("Failed to fetch customers");
       setCustomers([]);
-      setFilteredCustomers([]);
+      setTotalRecords(0);
     } finally {
       setLoading(false);
     }
@@ -57,57 +75,7 @@ export default function ListCustomers() {
   useEffect(() => {
     fetchCustomers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleDateFilter = () => {
-    if (!fromDate || !toDate) {
-      toast.error("Please select both From and To dates");
-      return;
-    }
-
-    const from = new Date(fromDate);
-    const to = new Date(toDate);
-    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
-      toast.error("Invalid date range");
-      return;
-    }
-
-    const filtered = customers.filter((c) => {
-      const createdAt = new Date(c.created_at);
-      return createdAt >= from && createdAt <= to;
-    });
-
-    setFilteredCustomers(filtered);
-    setCurrentPage(1);
-  };
-
-  useEffect(() => {
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) {
-      setFilteredCustomers(customers);
-      return;
-    }
-
-    const filtered = customers.filter((u) => {
-      let domain = "";
-      let customerId = "";
-      try {
-        const reqBody = JSON.parse(u.request_body || "{}");
-        domain = reqBody.domain || "";
-        customerId = reqBody.customerId || "";
-      } catch {}
-
-      return (
-        u.app_name?.toLowerCase().includes(q) ||
-        domain.toLowerCase().includes(q) ||
-        customerId.toLowerCase().includes(q) ||
-        String(u.status_code || "").toLowerCase().includes(q)
-      );
-    });
-
-    setFilteredCustomers(filtered);
-    setCurrentPage(1);
-  }, [searchQuery, customers]);
+  }, [currentPage, itemsPerPage, sortConfig, fromDate, toDate]);
 
   const handleSort = (key: string) => {
     let direction: "asc" | "desc" = "asc";
@@ -117,84 +85,25 @@ export default function ListCustomers() {
     setSortConfig({ key, direction });
   };
 
-  const sortedCustomers = useMemo(() => {
-    if (!sortConfig) return filteredCustomers;
-    return [...filteredCustomers].sort((a, b) => {
-      let aValue: any = a[sortConfig.key];
-      let bValue: any = b[sortConfig.key];
-
-      if (sortConfig.key === "created_at") {
-        aValue = new Date(aValue).getTime() || 0;
-        bValue = new Date(bValue).getTime() || 0;
-      }
-
-      if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
-      return 0;
-    });
-  }, [filteredCustomers, sortConfig]);
-
-  const totalPages = Math.ceil(sortedCustomers.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const currentData = sortedCustomers.slice(startIndex, startIndex + itemsPerPage);
-
-  const getVisiblePages = () => {
-    const pages = [];
-    const maxVisible = 5;
-    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-    let end = Math.min(totalPages, start + maxVisible - 1);
-    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
-    for (let i = start; i <= end; i++) pages.push(i);
-    return pages;
+  const handleSearch = () => {
+    setCurrentPage(1);
+    fetchCustomers();
   };
 
   const handleExport = () => {
-    if (!filteredCustomers.length) {
+    if (!customers.length) {
       toast.error("No data to export");
       return;
     }
 
-    const headers = [
-      "App Name",
-      "Domain",
-      "Customer Id",
-      "Licenses",
-      "Batch Id",
-      "Status Code",
-      "Response",
-      "Created At",
-    ];
-
+    const headers = ["App Name", "Status Code", "Created At"];
     const csv = [
       headers.join(","),
-      ...filteredCustomers.map((u) => {
-        let domain = "",
-          maxUnits = "",
-          batch_id = "",
-          customerId = "";
-        try {
-          const reqBody = JSON.parse(u.request_body || "{}");
-          domain = reqBody.domain || "";
-          maxUnits = reqBody.maxUnits || "";
-          batch_id = reqBody.batch_id || "";
-          customerId = reqBody.customerId || "";
-        } catch {}
-
-        const responseText = u.status_code === 200 ? "ok" : u.response_body;
-
-        return [
-          u.app_name || "",
-          domain,
-          customerId,
-          maxUnits,
-          batch_id,
-          u.status_code,
-          responseText,
-          new Date(u.created_at).toLocaleString(),
-        ]
-          .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-          .join(",");
-      }),
+      ...customers.map((u) => [
+        u.app_name || "",
+        u.status_code || "",
+        new Date(u.created_at).toLocaleString(),
+      ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")),
     ].join("\n");
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -206,6 +115,18 @@ export default function ListCustomers() {
     URL.revokeObjectURL(url);
   };
 
+  const totalPages = Math.ceil(totalRecords / itemsPerPage);
+
+  const getVisiblePages = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+    for (let i = start; i <= end; i++) pages.push(i);
+    return pages;
+  };
+
   return (
     <Layout>
       <div className="space-y-4">
@@ -215,11 +136,11 @@ export default function ListCustomers() {
 
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center border rounded-md px-2">
-              <i className="bi bi-search text-slate-400" />
               <Input
-                placeholder="Search by app, domain, customer id, or status code..."
+                placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 className="border-none focus-visible:ring-0 shadow-none w-64"
               />
             </div>
@@ -244,11 +165,11 @@ export default function ListCustomers() {
               />
             </div>
 
-            <Button variant="default" size="sm" onClick={handleDateFilter} disabled={!fromDate || !toDate || loading}>
-              {loading ? "Filtering..." : "Filter"}
+            <Button variant="default" size="sm" onClick={() => { setCurrentPage(1); fetchCustomers(); }}>
+              Filter
             </Button>
 
-            <Button variant="outline" size="sm" onClick={handleExport} disabled={loading || !filteredCustomers.length}>
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={loading || !customers.length}>
               <i className="bi bi-download me-1"></i> Export CSV
             </Button>
           </div>
@@ -257,7 +178,7 @@ export default function ListCustomers() {
         {/* Table */}
         {loading ? (
           <div className="text-center text-gray-500 py-4">Loading customers...</div>
-        ) : sortedCustomers.length > 0 ? (
+        ) : customers.length > 0 ? (
           <>
             <div className="overflow-x-auto">
               <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
@@ -268,11 +189,6 @@ export default function ListCustomers() {
                       { label: "App Name", key: "app_name" },
                       { label: "Status Code", key: "status_code" },
                       { label: "Created At", key: "created_at" },
-                      { label: "Domain", key: "domain" },
-                      { label: "Customer Id", key: "customer_id" },
-                      { label: "Max Unit", key: "max_unit" },
-                      { label: "Batch Id", key: "batch_id" },
-                      { label: "Response", key: "response" },
                     ].map((col) => {
                       const isSorted = sortConfig?.key === col.key;
                       const isAsc = sortConfig?.direction === "asc";
@@ -299,37 +215,15 @@ export default function ListCustomers() {
                     })}
                   </tr>
                 </thead>
-
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {currentData.map((u, index) => {
-                    let domain = "",
-                      maxUnits = "",
-                      batch_id = "",
-                      customerId = "";
-                    try {
-                      const reqBody = JSON.parse(u.request_body || "{}");
-                      domain = reqBody.domain || "";
-                      maxUnits = reqBody.maxUnits || "";
-                      batch_id = reqBody.batch_id || "";
-                      customerId = reqBody.customerId || "";
-                    } catch {}
-
-                    const responseText = u.status_code === 200 ? "ok" : u.response_body;
-
-                    return (
-                      <tr key={u.id || index} className="hover:bg-gray-50">
-                        <td className="px-4 py-2 text-sm">{startIndex + index + 1}</td>
-                        <td className="px-4 py-2 text-sm">{u.app_name || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{u.status_code || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{new Date(u.created_at).toLocaleString()}</td>
-                        <td className="px-4 py-2 text-sm">{domain || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{customerId || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{maxUnits || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{batch_id || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{responseText || "—"}</td>
-                      </tr>
-                    );
-                  })}
+                  {customers.map((u, index) => (
+                    <tr key={u.id || index} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 text-sm">{(currentPage - 1) * itemsPerPage + index + 1}</td>
+                      <td className="px-4 py-2 text-sm">{u.app_name || "—"}</td>
+                      <td className="px-4 py-2 text-sm">{u.status_code || "—"}</td>
+                      <td className="px-4 py-2 text-sm">{new Date(u.created_at).toLocaleString()}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
