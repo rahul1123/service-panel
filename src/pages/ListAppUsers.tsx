@@ -41,6 +41,11 @@ export default function CustomerFileUploads() {
         params.from = fromDate;
         params.to = toDate;
       }
+      else {
+  const currentDate = new Date().toISOString().split('T')[0]; // format: YYYY-MM-DD
+  params.from = currentDate;
+  params.to = currentDate;
+}
 
       if (searchTerm) {
         params.search = searchTerm.trim();
