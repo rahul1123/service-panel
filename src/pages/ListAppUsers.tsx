@@ -38,13 +38,13 @@ export default function CustomerFileUploads() {
       };
 
       if (fromDate && toDate) {
-        params.from = fromDate;
-        params.to = toDate;
+        params.startDate = fromDate;
+        params.endDate = toDate;
       }
       else {
   const currentDate = new Date().toISOString().split('T')[0]; // format: YYYY-MM-DD
-  params.from = currentDate;
-  params.to = currentDate;
+  params.startDate = currentDate;
+  params.endDate = currentDate;
 }
 
       if (searchTerm) {

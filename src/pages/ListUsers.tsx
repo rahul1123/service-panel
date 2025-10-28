@@ -11,7 +11,7 @@ export default function CustomerFileUploads() {
   const [loading, setLoading] = useState(true);
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(100);
  const [searchQuery, setSearchQuery] = useState("");
  const [activeFromDate, setActiveFromDate] = useState("");
   const [activeToDate, setActiveToDate] = useState("");
@@ -355,9 +355,9 @@ export default function CustomerFileUploads() {
                   onChange={handlePageSizeChange}
                   className="border border-gray-300 rounded-md text-sm p-1"
                 >
-                  <option value={5}>5</option>
-                  <option value={10}>10</option>
-                  <option value={20}>20</option>
+                  <option value={100}>100</option>
+                  <option value={200}>200</option>
+                  <option value={300}>300</option>
                 </select>
               </div>
             </div>
