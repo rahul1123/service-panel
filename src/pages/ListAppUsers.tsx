@@ -14,11 +14,13 @@ export default function CustomerFileUploads() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [totalItems, setTotalItems] = useState(0);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
 
   const { getUserDetails } = useAuth();
 
-  const fetchCustomer = async (filter = false) => {
+  /** ✅ Fetch Customer API with Pagination, Date, and Search Parameters */
+  const fetchCustomer = async () => {
     setLoading(true);
     try {
       const user = getUserDetails();
@@ -29,9 +31,19 @@ export default function CustomerFileUploads() {
         return;
       }
 
-      let url = `https://gwsapi.amyntas.in/api/v1/admin/list/app/users`;
-      if (filter && fromDate && toDate) {
-        url += `?from=${fromDate}&to=${toDate}`;
+      // Build query params dynamically
+      const params: any = {
+        page: currentPage,
+        limit: itemsPerPage,
+      };
+
+      if (fromDate && toDate) {
+        params.from = fromDate;
+        params.to = toDate;
+      }
+
+      if (searchTerm) {
+        params.search = searchTerm.trim();
       }
 
       const headers = {
@@ -39,42 +51,37 @@ export default function CustomerFileUploads() {
         Authorization: `Bearer ${token}`,
       };
 
-      const { data } = await axios.get(url, { headers });
-      setAppuser(data?.length ? data : []);
+      const { data } = await axios.get(`https://gwsapi.amyntas.in/api/v1/admin/list/app/users`, {
+        headers,
+        params,
+      });
+
+      // Adjust response handling depending on your API structure
+      setAppuser(data?.data || data || []);
+      setTotalItems(data?.total || data?.data?.length || 0);
     } catch (err) {
       console.error("Failed to fetch app user", err);
-      toast.error("Failed to fetch app User, showing dummy data");
+      toast.error("Failed to fetch app users");
       setAppuser([]);
+      setTotalItems(0);
     } finally {
       setLoading(false);
     }
   };
 
+  /** 🔁 Fetch on component mount or pagination/filter changes */
   useEffect(() => {
     fetchCustomer();
-  }, []);
+  }, [currentPage, itemsPerPage, fromDate, toDate, searchTerm]);
 
+  /** Sorting (client-side only) */
   const sortedData = useMemo(() => {
     let sortableData = [...appuser];
-
-    // Global search
-    if (searchTerm) {
-      const lower = searchTerm.toLowerCase();
-      sortableData = sortableData.filter(
-        (u) =>
-          (u.name && u.name.toLowerCase().includes(lower)) ||
-          (u.email && u.email.toLowerCase().includes(lower)) ||
-          (u.mobile && u.mobile.toLowerCase().includes(lower))
-      );
-    }
-
-    // Sorting
     if (sortConfig) {
       sortableData.sort((a, b) => {
         let aVal = a[sortConfig.key] ?? "";
         let bVal = b[sortConfig.key] ?? "";
 
-        // Handle date columns
         if (sortConfig.key === "added_on" || sortConfig.key === "updated_on") {
           aVal = new Date(aVal).getTime();
           bVal = new Date(bVal).getTime();
@@ -85,26 +92,19 @@ export default function CustomerFileUploads() {
         return 0;
       });
     }
-
     return sortableData;
-  }, [appuser, searchTerm, sortConfig]);
+  }, [appuser, sortConfig]);
 
-  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = sortedData.slice(startIndex, startIndex + itemsPerPage);
-
-  const handleNext = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
-  const handlePrev = () => currentPage > 1 && setCurrentPage(currentPage - 1);
-
+  /** Sorting Trigger */
   const requestSort = (key: string) => {
     let direction: "asc" | "desc" = "asc";
     if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") direction = "desc";
     setSortConfig({ key, direction });
   };
 
+  /** CSV Export */
   const handleExport = () => {
     if (!appuser.length) return toast.error("No data to export");
-
     const csvContent =
       "data:text/csv;charset=utf-8," +
       [
@@ -132,6 +132,7 @@ export default function CustomerFileUploads() {
     document.body.removeChild(link);
   };
 
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
   const sortableColumns = [
     { key: "name", label: "Name" },
     { key: "email", label: "Email" },
@@ -154,7 +155,10 @@ export default function CustomerFileUploads() {
               type="text"
               placeholder="Search by Name, Email, Mobile"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setCurrentPage(1);
+                setSearchTerm(e.target.value);
+              }}
               className="border border-gray-300 rounded-md text-sm p-1"
             />
 
@@ -163,7 +167,10 @@ export default function CustomerFileUploads() {
               <input
                 type="date"
                 value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
+                onChange={(e) => {
+                  setCurrentPage(1);
+                  setFromDate(e.target.value);
+                }}
                 className="border border-gray-300 rounded-md text-sm p-1"
               />
             </div>
@@ -172,24 +179,15 @@ export default function CustomerFileUploads() {
               <input
                 type="date"
                 value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
+                onChange={(e) => {
+                  setCurrentPage(1);
+                  setToDate(e.target.value);
+                }}
                 className="border border-gray-300 rounded-md text-sm p-1"
               />
             </div>
 
-            <Button
-              variant="outline"
-              onClick={() => fetchCustomer(true)}
-              disabled={!fromDate || !toDate || loading}
-            >
-              Filter
-            </Button>
-
-            <Button
-              variant="default"
-              onClick={handleExport}
-              disabled={!appuser.length || loading}
-            >
+            <Button variant="default" onClick={handleExport} disabled={!appuser.length || loading}>
               Export CSV
             </Button>
           </div>
@@ -228,9 +226,9 @@ export default function CustomerFileUploads() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {paginatedData.map((u, i) => (
+                  {sortedData.map((u, i) => (
                     <tr key={u.id}>
-                      <td className="px-4 py-2 text-sm">{startIndex + i + 1}</td>
+                      <td className="px-4 py-2 text-sm">{(currentPage - 1) * itemsPerPage + i + 1}</td>
                       <td className="px-4 py-2 text-sm">{u.name || "—"}</td>
                       <td className="px-4 py-2 text-sm">{u.email || "—"}</td>
                       <td className="px-4 py-2 text-sm">{u.mobile || "—"}</td>
@@ -246,16 +244,20 @@ export default function CustomerFileUploads() {
               </table>
             </div>
 
-            {/* Pagination Controls */}
+            {/* Pagination */}
             <div className="flex flex-col sm:flex-row justify-between items-center mt-4 gap-3">
               <div className="flex items-center gap-2">
-                <Button onClick={handlePrev} disabled={currentPage === 1} variant="outline">
+                <Button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} variant="outline">
                   Previous
                 </Button>
                 <span className="text-sm text-gray-700">
                   Page {currentPage} of {totalPages || 1}
                 </span>
-                <Button onClick={handleNext} disabled={currentPage === totalPages} variant="outline">
+                <Button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  variant="outline"
+                >
                   Next
                 </Button>
               </div>
