@@ -258,13 +258,17 @@ export default function CustomerFileUploads() {
                 <span className="text-sm text-gray-700">
                   Page {currentPage} of {totalPages || 1}
                 </span>
-                <Button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  variant="outline"
-                >
-                  Next
-                </Button>
+               <Button
+      onClick={() =>
+        setCurrentPage((prev) =>
+          Math.min(totalPages > 0 ? totalPages : 1, prev + 1)
+        )
+      }
+      disabled={currentPage >= totalPages || totalPages === 0}
+      variant="outline"
+    >
+      Next
+    </Button>
               </div>
 
               <div className="flex items-center gap-2">

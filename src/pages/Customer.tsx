@@ -212,7 +212,7 @@ export default function CustomerFileUploads() {
 
 
           {/* <Button onClick={() => { setFromDate(""); setToDate(""); }}>Clear Dates</Button> */}
-                <Button onClick={handleExport} variant="outline" className="bg-blue/80">
+                <Button onClick={handleExport} variant="outline" className="bg-blue-500 text-white hover:bg-blue-600">
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>

@@ -191,9 +191,18 @@ export default function UserFileUploads() {
             {loading ? "Submit" : "Submit"}
           </Button>
           {/* <Button onClick={() => {setFromDate(""); setToDate("");}} >Clear Dates</Button> */}
-          <Button onClick={handleExport} variant="outline" className="bg-white/80">
+          {/* <Button onClick={handleExport} variant="outline" className="bg-white/80">
             <Download className="w-4 h-4 mr-2" /> Export
-          </Button>
+          </Button> */}
+            <Button
+ 
+                      size="sm"
+                      onClick={handleExport}
+                   variant="outline"
+                        className="bg-blue-500 text-white hover:bg-blue-600"
+                    >
+                      Export CSV
+                    </Button>
         </div>
 
         {/* Modal */}
