@@ -145,10 +145,14 @@ export default function ListCustomers() {
   };
 
   const handleExport = () => {
-    if (!filteredCustomers.length) {
-      toast.error("No data to export");
-      return;
-    }
+    // if (!filteredCustomers.length) {
+    //   toast.error("No data to export");
+    //   return;
+    // }
+     if (!customers.length) {
+    toast.error("No data to export");
+    return;
+  }
 
     const headers = [
       "App Name",
@@ -161,37 +165,65 @@ export default function ListCustomers() {
       "Created At",
     ];
 
-    const csv = [
-      headers.join(","),
-      ...filteredCustomers.map((u) => {
-        let domain = "",
-          maxUnits = "",
-          batch_id = "",
-          customerId = "";
-        try {
-          const reqBody = JSON.parse(u.request_body || "{}");
-          domain = reqBody.domain || "";
-          maxUnits = reqBody.maxUnits || "";
-          batch_id = reqBody.batch_id || "";
-          customerId = reqBody.customerId || "";
-        } catch {}
+    // const csv = [
+    //   headers.join(","),
+    //   ...filteredCustomers.map((u) => {
+    //     let domain = "",
+    //       maxUnits = "",
+    //       batch_id = "",
+    //       customerId = "";
+    //     try {
+    //       const reqBody = JSON.parse(u.request_body || "{}");
+    //       domain = reqBody.domain || "";
+    //       maxUnits = reqBody.maxUnits || "";
+    //       batch_id = reqBody.batch_id || "";
+    //       customerId = reqBody.customerId || "";
+    //     } catch {}
 
-        const responseText = u.status_code === 200 ? "ok" : u.response_body;
+    //     const responseText = u.status_code === 200 ? "ok" : u.response_body;
 
-        return [
-          u.app_name || "",
-          domain,
-          customerId,
-          maxUnits,
-          batch_id,
-          u.status_code,
-          responseText,
-          new Date(u.created_at).toLocaleString(),
-        ]
-          .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-          .join(",");
-      }),
-    ].join("\n");
+    //     return [
+    //       u.app_name || "",
+    //       domain,
+    //       customerId,
+    //       maxUnits,
+    //       batch_id,
+    //       u.status_code,
+    //       responseText,
+    //       new Date(u.created_at).toLocaleString(),
+    //     ]
+    //       .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+    //       .join(",");
+    //   }),
+    // ].join("\n");
+     const csv = [
+    headers.join(","),
+    ...customers.map((u) => {
+      let domain = "", maxUnits = "", batch_id = "", customerId = "";
+      try {
+        const reqBody = JSON.parse(u.request_body || "{}");
+        domain = reqBody.domain || "";
+        maxUnits = reqBody.maxUnits || "";
+        batch_id = reqBody.batch_id || "";
+        customerId = reqBody.customerId || "";
+      } catch {}
+
+      const responseText = u.status_code === 200 ? "ok" : u.response_body;
+
+      return [
+        u.app_name || "",
+        domain,
+        customerId,
+        maxUnits,
+        batch_id,
+        u.status_code,
+        responseText,
+        new Date(u.created_at).toLocaleString(),
+      ]
+        .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+        .join(",");
+    }),
+  ].join("\n");
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
@@ -222,6 +254,7 @@ export default function ListCustomers() {
 
             <div className="flex items-center gap-2">
               <label className="text-sm text-gray-600">From:</label>
+              
               <input
                 type="date"
                 value={fromDate}
@@ -239,11 +272,21 @@ export default function ListCustomers() {
               />
             </div>
 
-            <Button onClick={handleDateFilter} disabled={loading} size="sm">
-              {loading ? "Filtering..." : "Filter"}
+            <Button onClick={handleDateFilter} disabled={loading} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
+              {loading ? "Submit" : "Submit"}
             </Button>
+            {/* ✅ New Export Button */}
+    <Button
+      onClick={handleExport}
+      variant="outline"
+      size="sm"
+      className="bg-blue-500 text-white hover:bg-blue-600"
+    >
+      <i className="bi bi-download me-1"></i> Export
+    </Button>
           </div>
         </div>
+        
 
         {/* Table */}
         {loading ? (
@@ -362,18 +405,20 @@ export default function ListCustomers() {
 
               <div className="flex items-center gap-2">
                 <label className="text-sm text-gray-600">Items per page:</label>
-                <select
-                  value={itemsPerPage}
-                  onChange={(e) => {
-                    setItemsPerPage(Number(e.target.value));
-                    setCurrentPage(1);
-                  }}
-                  className="border border-gray-300 rounded-md text-sm p-1"
-                >
-                  <option value={100}>100</option>
-                  <option value={200}>200</option>
-                  <option value={300}>300</option>
-                </select>
+              <select
+  value={itemsPerPage}
+  onChange={(e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  }}
+  className="border border-gray-300 rounded-md text-sm p-1"
+>
+  {Array.from({ length: 8 }, (_, i) => (i + 1) * 50).map((num) => (
+    <option key={num} value={num}>
+      {num}
+    </option>
+  ))}
+</select>
               </div>
             </div>
           </>

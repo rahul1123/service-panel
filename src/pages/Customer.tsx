@@ -5,10 +5,10 @@ import { Download, Plus, ArrowUp, ArrowDown } from "lucide-react";
 import axios from "axios";
 import { saveAs } from "file-saver";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
 import CustomerFileModel from "@/components/modals/CustomerFileModel";
 import { API_BASE_URL } from "../config/api";
 import { useAuth } from "@/context/AuthContext";
-
 interface CustomerFileUpload {
   batch_id: number;
   bulk_type: string;
@@ -21,7 +21,6 @@ interface CustomerFileUpload {
   added_on: string;
   completed_at: string | null;
 }
-
 export default function CustomerFileUploads() {
   const [uploads, setUploads] = useState<CustomerFileUpload[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,10 +31,10 @@ export default function CustomerFileUploads() {
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-
+  const [activeFromDate, setActiveFromDate] = useState("");
+  const [activeToDate, setActiveToDate] = useState("");
   const { getUserDetails } = useAuth();
-
-  const fetchCustomerFileUploads = async () => {
+  const fetchCustomerFileUploads = async (page = 1, from?: string, to?: string) => {
     setLoading(true);
     try {
       const token = getUserDetails()?.token;
@@ -138,6 +137,23 @@ export default function CustomerFileUploads() {
     return sortConfig.direction === "asc" ? <ArrowUp className="inline w-3 h-3 ml-1" /> : <ArrowDown className="inline w-3 h-3 ml-1" />;
   };
 
+
+    const handleDateFilter = () => {
+      if (!fromDate || !toDate) {
+        toast.error("Please select both From and To dates");
+        return;
+      }
+      const from = new Date(fromDate);
+      const to = new Date(toDate);
+      if (isNaN(from.getTime()) || isNaN(to.getTime()) || from > to) {
+        toast.error("Invalid date range");
+        return;
+      }
+      setActiveFromDate(fromDate);
+      setActiveToDate(toDate);
+      setCurrentPage(1);
+     fetchCustomerFileUploads(1, fromDate, toDate);
+    };
   return (
     <Layout>
       <div className="space-y-4">
@@ -145,10 +161,6 @@ export default function CustomerFileUploads() {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-800">Customer File Uploads</h1>
           <div className="flex gap-2">
-            <Button onClick={handleExport} variant="outline" className="bg-white/80">
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
             <Button onClick={() => setIsModalOpen(true)} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300">
               <Plus className="w-4 h-4 mr-2" />
               Upload File
@@ -158,10 +170,52 @@ export default function CustomerFileUploads() {
 
         {/* Filters */}
         <div className="flex flex-col sm:flex-row gap-2 items-center">
-          <input type="text" placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="border rounded p-2 flex-1" />
+        <div className="flex items-center border rounded-md px-2">
+            <i className="bi bi-search text-slate-400" />
+            <Input
+              placeholder="Search by Batch ID,Bulk Type..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border-none focus-visible:ring-0 shadow-none w-64"
+            />
+          </div>
+
+     {/* <input type="text" placeholder="Search..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="border rounded p-2 flex-1" />
+          */}
+
+{/*           
           <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} className="border rounded p-2" />
-          <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="border rounded p-2" />
-          <Button onClick={() => { setFromDate(""); setToDate(""); }}>Clear Dates</Button>
+          <input type="date" value={toDate} onChange={e => setToDate(e.target.value)} className="border rounded p-2" /> */}
+
+             <div className="flex items-center gap-2">
+                      <label className="text-sm text-gray-600">From:</label>
+                      <input
+                        type="date"
+                        value={fromDate}
+                        onChange={e => setFromDate(e.target.value)}
+                        className="border rounded p-2"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-gray-600">To:</label>
+                      <input
+                        type="date"
+                        value={toDate}
+                        onChange={e => setToDate(e.target.value)}
+                        className="border rounded p-2"
+                      />
+                    </div>
+                    <Button onClick={handleDateFilter} disabled={loading} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
+                      {loading ? "Submit" : "Submit"}
+                    </Button>
+
+
+
+          {/* <Button onClick={() => { setFromDate(""); setToDate(""); }}>Clear Dates</Button> */}
+                <Button onClick={handleExport} variant="outline" className="bg-blue/80">
+              <Download className="w-4 h-4 mr-2" />
+              Export
+            </Button>
         </div>
 
         {/* Modal */}

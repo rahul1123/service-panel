@@ -192,7 +192,7 @@ export default function CustomerFileUploads() {
               />
             </div>
 
-            <Button variant="default" onClick={handleExport} disabled={!appuser.length || loading}>
+            <Button variant="default" onClick={handleExport} disabled={!appuser.length || loading} className="bg-blue-500 ml-2 text-sm px-3 py-2">
               Export CSV
             </Button>
           </div>

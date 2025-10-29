@@ -147,13 +147,17 @@ export default function CustomerFileUploads() {
       toast.error("Please wait, data is still loading...");
       return;
     }
-    if (!filteredAndSortedUsers.length) {
-      toast.error("No user data available to export");
-      return;
-    }
+    // if (!filteredAndSortedUsers.length) {
+    //   toast.error("No user data available to export");
+    //   return;
+    // }
+      if (!user.length) {
+    toast.error("No data to export");
+    return;
+  }
 
     const headers = ["#", "Primary Email", "Username", "Batch ID", "Message", "Created At"];
-    const rows = filteredAndSortedUsers.map((file, index) => [
+    const rows = user.map((file, index) => [
       index + 1,
       file.primaryEmail || "",
       file.Username || "",
@@ -240,20 +244,22 @@ export default function CustomerFileUploads() {
               />
             </div>
 
-            <Button onClick={handleDateFilter} disabled={loading} size="sm">
-              {loading ? "Filtering..." : "Filter"}
+            <Button onClick={handleDateFilter} disabled={loading} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
+              {loading ? "Submit" : "Submit"}
             </Button>
-          </div>
-        </div>
-
             <Button
               variant="outline"
               size="sm"
               onClick={handleExport}
               disabled={loading || !user.length}
+                className="bg-blue-500 text-white hover:bg-blue-600"
             >
               Export CSV
             </Button>
+          </div>
+        </div>
+
+            
           </div>
      
 

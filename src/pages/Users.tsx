@@ -9,7 +9,6 @@ import UserFileModal from "@/components/modals/UserFileModal";
 import { API_BASE_URL } from "../config/api";
 import { useAuth } from "@/context/AuthContext";
 import { Input } from "@/components/ui/input";
-
 interface UserFileUpload {
   id: number;
   batch_id: string | number;
@@ -23,7 +22,6 @@ interface UserFileUpload {
   added_on: string;
   completed_at?: string | null;
 }
-
 export default function UserFileUploads() {
   const [uploads, setUploads] = useState<UserFileUpload[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,11 +31,11 @@ export default function UserFileUploads() {
   const [toDate, setToDate] = useState<string>("");
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [activeFromDate, setActiveFromDate] = useState("");
+  const [activeToDate, setActiveToDate] = useState("");
   const itemsPerPage = 5;
-
   const { getUserDetails } = useAuth();
-
-  const fetchUserFileUploads = async () => {
+  const fetchUserFileUploads = async (page = 1, from?: string, to?: string) => {
     setLoading(true);
     try {
       const token = getUserDetails()?.token;
@@ -62,7 +60,6 @@ export default function UserFileUploads() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchUserFileUploads();
   }, []);
@@ -75,14 +72,11 @@ export default function UserFileUploads() {
       setSortConfig({ key, direction: "asc" });
     }
   };
-
   const sortedFilteredData = useMemo(() => {
     let filtered = [...uploads];
-
     // Date filter
     if (fromDate) filtered = filtered.filter(u => new Date(u.added_on) >= new Date(fromDate));
     if (toDate) filtered = filtered.filter(u => new Date(u.added_on) <= new Date(toDate));
-
     // Search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -93,7 +87,6 @@ export default function UserFileUploads() {
         (u.added_by || "").toLowerCase().includes(term)
       );
     }
-
     // Sorting
     if (sortConfig) {
       filtered.sort((a, b) => {
@@ -113,7 +106,6 @@ export default function UserFileUploads() {
 
   const totalPages = Math.ceil(sortedFilteredData.length / itemsPerPage);
   const paginatedData = sortedFilteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
   // CSV Export
   const handleExport = () => {
     if (!uploads.length) return toast.error("No files to export.");
@@ -131,12 +123,26 @@ export default function UserFileUploads() {
     saveAs(new Blob([csvContent], { type: "text/csv;charset=utf-8;" }), `user_file_uploads_${new Date().toISOString().split("T")[0]}.csv`);
     toast.success("Exported CSV successfully!");
   };
-
   const getArrow = (key: string) => {
     if (!sortConfig || sortConfig.key !== key) return null;
     return sortConfig.direction === "asc" ? <ArrowUp className="inline w-3 h-3 ml-1" /> : <ArrowDown className="inline w-3 h-3 ml-1" />;
   };
-
+  const handleDateFilter = () => {
+    if (!fromDate || !toDate) {
+      toast.error("Please select both From and To dates");
+      return;
+    }
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
+    if (isNaN(from.getTime()) || isNaN(to.getTime()) || from > to) {
+      toast.error("Invalid date range");
+      return;
+    }
+    setActiveFromDate(fromDate);
+    setActiveToDate(toDate);
+    setCurrentPage(1);
+    fetchUserFileUploads(1, fromDate, toDate);
+  };
   return (
     <Layout>
       <div className="space-y-4">
@@ -144,9 +150,6 @@ export default function UserFileUploads() {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-800">User File Uploads</h1>
           <div className="flex gap-2">
-            <Button onClick={handleExport} variant="outline" className="bg-white/80">
-              <Download className="w-4 h-4 mr-2" /> Export
-            </Button>
             <Button
               onClick={() => setIsModalOpen(true)}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
@@ -155,29 +158,42 @@ export default function UserFileUploads() {
             </Button>
           </div>
         </div>
-
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-2 items-center">
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="border rounded p-2 flex-1"
-          />
-          <input
-            type="date"
-            value={fromDate}
-            onChange={e => setFromDate(e.target.value)}
-            className="border rounded p-2"
-          />
-          <input
-            type="date"
-            value={toDate}
-            onChange={e => setToDate(e.target.value)}
-            className="border rounded p-2"
-          />
-          <Button onClick={() => {setFromDate(""); setToDate("");}} >Clear Dates</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center border rounded-md px-2">
+            <i className="bi bi-search text-slate-400" />
+            <Input
+              placeholder="Search by Batch ID,Bulk Type..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border-none focus-visible:ring-0 shadow-none w-64"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">From:</label>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={e => setFromDate(e.target.value)}
+              className="border rounded p-2"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">To:</label>
+            <input
+              type="date"
+              value={toDate}
+              onChange={e => setToDate(e.target.value)}
+              className="border rounded p-2"
+            />
+          </div>
+          <Button onClick={handleDateFilter} disabled={loading} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
+            {loading ? "Submit" : "Submit"}
+          </Button>
+          {/* <Button onClick={() => {setFromDate(""); setToDate("");}} >Clear Dates</Button> */}
+          <Button onClick={handleExport} variant="outline" className="bg-white/80">
+            <Download className="w-4 h-4 mr-2" /> Export
+          </Button>
         </div>
 
         {/* Modal */}
@@ -186,7 +202,7 @@ export default function UserFileUploads() {
           setOpen={setIsModalOpen}
           fetchFileUploads={fetchUserFileUploads}
           editingFileUpload={null}
-          setEditingFileUpload={() => {}}
+          setEditingFileUpload={() => { }}
         />
 
         {/* Table */}

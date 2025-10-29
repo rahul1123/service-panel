@@ -197,7 +197,7 @@ const generateApiKey = () => {
     <Button
       type="button"
       onClick={generateApiKey}
-      className="ml-2 text-sm px-3 py-2"
+      className="bg-blue-500 ml-2 text-sm px-3 py-2"
     >
       Generate Key
     </Button>
@@ -288,7 +288,7 @@ const generateApiKey = () => {
           </div>
           {/* Submit */}
           <div className="col-span-2 flex justify-end">
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="bg-blue-500 ml-2 text-sm px-3 py-2" >
               {loading ? "Creating..." : "Create App User"}
             </Button>
           </div>
