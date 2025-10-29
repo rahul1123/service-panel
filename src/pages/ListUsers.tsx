@@ -76,18 +76,17 @@ export default function CustomerFileUploads() {
   // 🔹 Sort + search logic
   const filteredAndSortedUsers = useMemo(() => {
     let filtered = user;
-
     // Search filter
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
+    if (searchQuery.trim()) {
+      const term =  searchQuery.toLowerCase();
       filtered = filtered.filter(
         (u) =>
-          u.primaryEmail?.toLowerCase().includes(term) ||
-          u.Username?.toLowerCase().includes(term) ||
-          u.batch_id?.toString().includes(term)
+          u.primaryEmail?.toLowerCase().includes(searchQuery) ||
+          u.Username?.toLowerCase().includes(searchQuery) ||
+          u.batch_id?.toString().includes(searchQuery) ||
+          u.message?.toString().includes(searchQuery)
       );
     }
-
     // Sorting
     if (sortConfig) {
       filtered = [...filtered].sort((a, b) => {
@@ -110,9 +109,8 @@ export default function CustomerFileUploads() {
         }
       });
     }
-
     return filtered;
-  }, [user, searchTerm, sortConfig]);
+  }, [user, searchQuery, sortConfig]);
 
   // Pagination
   const totalPages = Math.ceil(filteredAndSortedUsers.length / itemsPerPage);
@@ -128,7 +126,6 @@ export default function CustomerFileUploads() {
     setItemsPerPage(Number(e.target.value));
     setCurrentPage(1);
   };
-
   const getVisiblePages = () => {
     const pages = [];
     const maxVisible = 5;
@@ -217,12 +214,12 @@ export default function CustomerFileUploads() {
          <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center border rounded-md px-2">
               <i className="bi bi-search text-slate-400" />
-              <Input
-                placeholder="Search by app, domain, customer id, or status code..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="border-none focus-visible:ring-0 shadow-none w-64"
-              />
+            <Input
+  placeholder="Search by Primary Email, username..."
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  className="border-none focus-visible:ring-0 shadow-none w-64"
+/>
             </div>
 
             <div className="flex items-center gap-2">
@@ -356,15 +353,20 @@ export default function CustomerFileUploads() {
 
               <div className="flex items-center gap-2">
                 <label className="text-sm text-gray-600">Items per page:</label>
-                <select
-                  value={itemsPerPage}
-                  onChange={handlePageSizeChange}
-                  className="border border-gray-300 rounded-md text-sm p-1"
-                >
-                  <option value={100}>100</option>
-                  <option value={200}>200</option>
-                  <option value={300}>300</option>
-                </select>
+                              <select
+  value={itemsPerPage}
+  onChange={(e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  }}
+  className="border border-gray-300 rounded-md text-sm p-1"
+>
+  {Array.from({ length: 8 }, (_, i) => (i + 1) * 50).map((num) => (
+    <option key={num} value={num}>
+      {num}
+    </option>
+  ))}
+</select>
               </div>
             </div>
           </>
