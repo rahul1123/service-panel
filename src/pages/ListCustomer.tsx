@@ -291,9 +291,22 @@ export default function ListCustomers() {
                       <tr key={u.id || index} className="hover:bg-gray-50">
                         <td className="px-4 py-2 text-sm">{startIndex + index + 1}</td>
                         <td className="px-4 py-2 text-sm">{u.app_name || "—"}</td>
-                        <td className="px-4 py-2 text-sm">{u.status_code || "—"}</td>
+                        {/* <td className="px-4 py-2 text-sm">{u.status_code || "—"}</td> */}
+
+                          <td className="px-4 py-3">
+            {u.status_code === 200 ? (
+              <span className="text-green-600 bg-green-100 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                <i className="bi bi-check-circle-fill"></i> 200
+              </span>
+            ) : (
+              <span className="text-red-600 bg-red-100 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+                <i className="bi bi-exclamation-triangle-fill"></i>{" "}
+                {u.status_code}
+              </span>
+            )}
+          </td>
                         <td className="px-4 py-2 text-sm">{new Date(u.created_at).toLocaleString()}</td>
-                        <td className="px-4 py-2 text-sm">{domain || "—"}</td>
+                        <td className="px-4 py-2 text-sm"><i className="bi bi-globe2 text-gray-400 mr-1"></i>{domain || "—"}</td>
                         <td className="px-4 py-2 text-sm">{customerId || "—"}</td>
                         <td className="px-4 py-2 text-sm">{maxUnits || "—"}</td>
                         <td className="px-4 py-2 text-sm">{batch_id || "—"}</td>
@@ -323,6 +336,12 @@ export default function ListCustomers() {
                       variant={page === currentPage ? "default" : "outline"}
                       size="sm"
                       onClick={() => setCurrentPage(page)}
+  
+  className={`flex items-center gap-1 transition-colors ${
+      page === currentPage
+        ? "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
+        : "bg-white text-blue-500 border border-blue-400 hover:bg-blue-50"
+    }`}
                     >
                       {page}
                     </Button>
@@ -334,6 +353,9 @@ export default function ListCustomers() {
                   size="sm"
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => p + 1)}
+                   className={`flex items-center gap-1 bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 transition-colors ${
+    currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
+  }`}
                 >
                   Next <i className="bi bi-chevron-right ms-1"></i>
                 </Button>

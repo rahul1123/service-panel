@@ -303,9 +303,9 @@ export default function CustomerFileUploads() {
                   {currentUsers.map((file, index) => (
                     <tr key={file.id || index} className="hover:bg-gray-50">
                       <td className="px-4 py-2 text-sm text-gray-900">{startIndex + index + 1}</td>
-                      <td className="px-4 py-2 text-sm text-gray-900">{file.primaryEmail}</td>
+                      <td className="px-4 py-2 text-sm text-gray-900"><i className="bi bi-envelope text-gray-400 mr-1"></i>{file.primaryEmail}</td>
                       <td className="px-4 py-2 text-sm text-gray-900">{file.Username}</td>
-                      <td className="px-4 py-2 text-sm text-gray-900">{file.batch_id || "N/A"}</td>
+                      <td className="px-4 py-2 text-sm text-gray-900"> <span className="text-gray-900">{file.batch_id || "N/A"}</span></td>
                       <td className="px-4 py-2 text-sm text-gray-900">{file.message || "N/A"}</td>
                       <td className="px-4 py-2 text-sm text-gray-500">
                         {new Date(file.created_at).toLocaleString()}
@@ -335,6 +335,12 @@ export default function CustomerFileUploads() {
                       variant={page === currentPage ? "default" : "outline"}
                       size="sm"
                       onClick={() => handlePageChange(page)}
+                        
+  className={`flex items-center gap-1 transition-colors ${
+      page === currentPage
+        ? "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
+        : "bg-white text-blue-500 border border-blue-400 hover:bg-blue-50"
+    }`}
                     >
                       {page}
                     </Button>
@@ -346,6 +352,9 @@ export default function CustomerFileUploads() {
                   size="sm"
                   disabled={currentPage === totalPages}
                   onClick={() => handlePageChange(currentPage + 1)}
+                  className={`flex items-center gap-1 bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 transition-colors ${
+                  currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
+                 }`}
                 >
                   Next
                 </Button>
@@ -359,7 +368,7 @@ export default function CustomerFileUploads() {
     setItemsPerPage(Number(e.target.value));
     setCurrentPage(1);
   }}
-  className="border border-gray-300 rounded-md text-sm p-1"
+  className="border border-blue-300 rounded-md text-sm p-1"
 >
   {Array.from({ length: 8 }, (_, i) => (i + 1) * 50).map((num) => (
     <option key={num} value={num}>

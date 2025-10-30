@@ -30,7 +30,7 @@ export default function CustomerFileUploads() {
   const [toDate, setToDate] = useState("");
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   const [activeFromDate, setActiveFromDate] = useState("");
   const [activeToDate, setActiveToDate] = useState("");
   const { getUserDetails } = useAuth();

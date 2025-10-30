@@ -267,6 +267,9 @@ export default function CustomerFileUploads() {
       }
       disabled={currentPage >= totalPages || totalPages === 0}
       variant="outline"
+        className={`flex items-center gap-1 bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 transition-colors ${
+                  currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
+                 }`}
     >
       Next
     </Button>

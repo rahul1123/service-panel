@@ -33,7 +33,7 @@ export default function UserFileUploads() {
   const [currentPage, setCurrentPage] = useState(1);
   const [activeFromDate, setActiveFromDate] = useState("");
   const [activeToDate, setActiveToDate] = useState("");
-  const itemsPerPage = 5;
+  const itemsPerPage = 10;
   const { getUserDetails } = useAuth();
   const fetchUserFileUploads = async (page = 1, from?: string, to?: string) => {
     setLoading(true);
@@ -334,10 +334,12 @@ function getStatusIcon(status: number) {
               </tbody>
             </table>
 
-            {/* Pagination */}
+             {/* Pagination */}
             {totalPages > 0 && (
               <div className="flex justify-center items-center gap-6 p-4 bg-gray-50 border-t">
-                <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}>Previous</Button>
+                <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} className={`flex items-center gap-1 bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 transition-colors ${
+        currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
+      }`}>Previous</Button>
                 <span className="text-sm font-medium text-gray-700">Page {currentPage} of {totalPages || 1}</span>
                 <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}>Next</Button>
               </div>
