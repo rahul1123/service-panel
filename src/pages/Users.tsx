@@ -174,6 +174,30 @@ export default function UserFileUploads() {
   link.click();
   URL.revokeObjectURL(url);
 };
+
+function getStatusIcon(status: number) {
+  if (status === 1) {
+    return (
+      <span className="text-green-600 flex items-center gap-1">
+        <i className="bi bi-check-circle-fill"></i> Completed
+      </span>
+    );
+  }
+
+  if (status === 0) {
+    return (
+      <span className="text-yellow-600 flex items-center gap-1">
+        <i className="bi bi-hourglass-split"></i> Pending
+      </span>
+    );
+  }
+
+  return (
+    <span className="text-gray-500 flex items-center gap-1">
+      <i className="bi bi-question-circle-fill"></i> Unknown
+    </span>
+  );
+}
   return (
     <Layout>
       <div className="space-y-4">
@@ -295,7 +319,7 @@ export default function UserFileUploads() {
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.bulk_type}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_name}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_path}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.status === 1 ? "Completed" : "Pending"}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{getStatusIcon(file.status)}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.total_count}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.added_by}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{new Date(file.added_on).toLocaleString()}</td>
