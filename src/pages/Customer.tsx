@@ -221,10 +221,16 @@ function getStatusIcon(status: number) {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-800">Customer File Uploads</h1>
           <div className="flex gap-2">
+
+             <Button onClick={handleSampleExport} variant="outline" className="bg-blue-500 text-white hover:bg-blue-600">
+              <Download className="w-4 h-4 mr-2" />
+              Download Sample File
+            </Button>
             <Button onClick={() => setIsModalOpen(true)} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300">
               <Plus className="w-4 h-4 mr-2" />
               Upload File
             </Button>
+
           </div>
         </div>
 
@@ -277,10 +283,7 @@ function getStatusIcon(status: number) {
               Export
             </Button>
 
-             <Button onClick={handleSampleExport} variant="outline" className="bg-blue-500 text-white hover:bg-blue-600">
-              <Download className="w-4 h-4 mr-2" />
-              Download Sample File
-            </Button>
+            
         </div>
 
         {/* Modal */}

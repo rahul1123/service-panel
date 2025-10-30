@@ -234,16 +234,16 @@ export default function CustomerFileUploads() {
                   {sortedData.map((u, i) => (
                     <tr key={u.id}>
                       <td className="px-4 py-2 text-sm">{(currentPage - 1) * itemsPerPage + i + 1}</td>
-                      <td className="px-4 py-2 text-sm"> <i className="bi bi-person-circle text-blue-500"></i> {u.name || "—"}</td>
-                      <td className="px-4 py-2 text-sm"><i className="bi bi-envelope text-gray-400 mr-1"></i> {u.email || "—"}</td>
-                      <td className="px-4 py-2 text-sm"><i className="bi bi-telephone text-gray-400 mr-1"></i> {u.mobile || "—"}</td>
+                      <td className="px-4 py-2 text-sm">{u.name || "—"}</td>
+                      <td className="px-4 py-2 text-sm">{u.email || "—"}</td>
+                      <td className="px-4 py-2 text-sm"> {u.mobile || "—"}</td>
                       <td className="px-4 py-2 text-sm"> <span className="inline-flex items-center gap-1 text-green-600 bg-green-100 px-2 py-1 rounded-full text-xs font-medium">
       <i className="bi bi-check-circle-fill"></i>{u.status || "—"} </span></td>
                       <td className="px-4 py-2 text-sm">{u.role || "—"}</td>
-                      <td className="px-4 py-2 text-sm"><i className="bi bi-calendar-event mr-1"></i>{new Date(u.added_on).toLocaleString()}</td>
-                      <td className="px-4 py-2 text-sm"><i className="bi bi-calendar-x mr-1"></i> {new Date(u.updated_on).toLocaleString()}</td>
-                      <td className="px-4 py-2 text-sm"><i className="bi bi-person-badge mr-1 text-indigo-500"></i>{u.app_name || "—"}</td>
-                      <td className="px-4 py-2 text-sm"><i className="bi bi-hash text-gray-400 mr-1"></i><i className="bi bi-hash text-gray-400 mr-1"></i>{u.api_key || "—"}</td>
+                      <td className="px-4 py-2 text-sm">{new Date(u.added_on).toLocaleString()}</td>
+                      <td className="px-4 py-2 text-sm"> {new Date(u.updated_on).toLocaleString()}</td>
+                      <td className="px-4 py-2 text-sm">{u.app_name || "—"}</td>
+                      <td className="px-4 py-2 text-sm">{u.api_key || "—"}</td>
                     </tr>
                   ))}
                 </tbody>
