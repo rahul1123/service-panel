@@ -143,6 +143,37 @@ export default function UserFileUploads() {
     setCurrentPage(1);
     fetchUserFileUploads(1, fromDate, toDate);
   };
+
+     const handleSampleExport = () => {
+  const headers = [
+    "email",
+    "password",
+    "username",
+    "recoveryemail",
+    "admin",
+  ];
+
+  const sampleData = [
+    [
+      "J.moreno@nassauassetcap.info",
+      "*Q-3R^XWpgMJX4@",
+      "J Moreno",
+      "J.moreno@nassauassetcap.info",
+      "N",
+    ],
+  ];
+
+  const csv =
+    [headers.join(","), ...sampleData.map((row) => row.join(","))].join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "Upload_sample_users.csv";
+  link.click();
+  URL.revokeObjectURL(url);
+};
   return (
     <Layout>
       <div className="space-y-4">
@@ -203,6 +234,11 @@ export default function UserFileUploads() {
                     >
                       Export CSV
                     </Button>
+
+                      <Button onClick={handleSampleExport} variant="outline" className="bg-blue-500 text-white hover:bg-blue-600">
+              <Download className="w-4 h-4 mr-2" />
+              Download Sample File
+            </Button>
         </div>
 
         {/* Modal */}

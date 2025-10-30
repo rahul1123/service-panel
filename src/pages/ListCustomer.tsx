@@ -37,7 +37,7 @@ export default function ListCustomers() {
         "x-api-key": "f7ab26185b14fc87db613850887be3b8",
         Authorization: `Bearer ${token}`,
       };
-   const params: any = {
+      const params: any = {
         startDate: from || today,
         endDate: to || today,
       };
@@ -54,13 +54,11 @@ export default function ListCustomers() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     fetchCustomers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-   const handleDateFilter = () => {
+  const handleDateFilter = () => {
     if (!fromDate || !toDate) {
       toast.error("Please select both From and To dates");
       return;
@@ -76,14 +74,12 @@ export default function ListCustomers() {
     setCurrentPage(1);
     fetchCustomers(1, fromDate, toDate);
   };
-
   useEffect(() => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) {
       setFilteredCustomers(customers);
       return;
     }
-
     const filtered = customers.filter((u) => {
       let domain = "";
       let customerId = "";
@@ -91,7 +87,7 @@ export default function ListCustomers() {
         const reqBody = JSON.parse(u.request_body || "{}");
         domain = reqBody.domain || "";
         customerId = reqBody.customerId || "";
-      } catch {}
+      } catch { }
 
       return (
         u.app_name?.toLowerCase().includes(q) ||
@@ -100,11 +96,9 @@ export default function ListCustomers() {
         String(u.status_code || "").toLowerCase().includes(q)
       );
     });
-
     setFilteredCustomers(filtered);
     setCurrentPage(1);
   }, [searchQuery, customers]);
-
   const handleSort = (key: string) => {
     let direction: "asc" | "desc" = "asc";
     if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") {
@@ -112,28 +106,23 @@ export default function ListCustomers() {
     }
     setSortConfig({ key, direction });
   };
-
   const sortedCustomers = useMemo(() => {
     if (!sortConfig) return filteredCustomers;
     return [...filteredCustomers].sort((a, b) => {
       let aValue: any = a[sortConfig.key];
       let bValue: any = b[sortConfig.key];
-
       if (sortConfig.key === "created_at") {
         aValue = new Date(aValue).getTime() || 0;
         bValue = new Date(bValue).getTime() || 0;
       }
-
       if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
       if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
       return 0;
     });
   }, [filteredCustomers, sortConfig]);
-
   const totalPages = Math.ceil(sortedCustomers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = sortedCustomers.slice(startIndex, startIndex + itemsPerPage);
-
   const getVisiblePages = () => {
     const pages = [];
     const maxVisible = 5;
@@ -143,17 +132,11 @@ export default function ListCustomers() {
     for (let i = start; i <= end; i++) pages.push(i);
     return pages;
   };
-
   const handleExport = () => {
-    // if (!filteredCustomers.length) {
-    //   toast.error("No data to export");
-    //   return;
-    // }
-     if (!customers.length) {
-    toast.error("No data to export");
-    return;
-  }
-
+    if (!customers.length) {
+      toast.error("No data to export");
+      return;
+    }
     const headers = [
       "App Name",
       "Domain",
@@ -164,67 +147,32 @@ export default function ListCustomers() {
       "Response",
       "Created At",
     ];
-
-    // const csv = [
-    //   headers.join(","),
-    //   ...filteredCustomers.map((u) => {
-    //     let domain = "",
-    //       maxUnits = "",
-    //       batch_id = "",
-    //       customerId = "";
-    //     try {
-    //       const reqBody = JSON.parse(u.request_body || "{}");
-    //       domain = reqBody.domain || "";
-    //       maxUnits = reqBody.maxUnits || "";
-    //       batch_id = reqBody.batch_id || "";
-    //       customerId = reqBody.customerId || "";
-    //     } catch {}
-
-    //     const responseText = u.status_code === 200 ? "ok" : u.response_body;
-
-    //     return [
-    //       u.app_name || "",
-    //       domain,
-    //       customerId,
-    //       maxUnits,
-    //       batch_id,
-    //       u.status_code,
-    //       responseText,
-    //       new Date(u.created_at).toLocaleString(),
-    //     ]
-    //       .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-    //       .join(",");
-    //   }),
-    // ].join("\n");
-     const csv = [
-    headers.join(","),
-    ...customers.map((u) => {
-      let domain = "", maxUnits = "", batch_id = "", customerId = "";
-      try {
-        const reqBody = JSON.parse(u.request_body || "{}");
-        domain = reqBody.domain || "";
-        maxUnits = reqBody.maxUnits || "";
-        batch_id = reqBody.batch_id || "";
-        customerId = reqBody.customerId || "";
-      } catch {}
-
-      const responseText = u.status_code === 200 ? "ok" : u.response_body;
-
-      return [
-        u.app_name || "",
-        domain,
-        customerId,
-        maxUnits,
-        batch_id,
-        u.status_code,
-        responseText,
-        new Date(u.created_at).toLocaleString(),
-      ]
-        .map((v) => `"${String(v).replace(/"/g, '""')}"`)
-        .join(",");
-    }),
-  ].join("\n");
-
+    const csv = [
+      headers.join(","),
+      ...customers.map((u) => {
+        let domain = "", maxUnits = "", batch_id = "", customerId = "";
+        try {
+          const reqBody = JSON.parse(u.request_body || "{}");
+          domain = reqBody.domain || "";
+          maxUnits = reqBody.maxUnits || "";
+          batch_id = reqBody.batch_id || "";
+          customerId = reqBody.customerId || "";
+        } catch { }
+        const responseText = u.status_code === 200 ? "ok" : u.response_body;
+        return [
+          u.app_name || "",
+          domain,
+          customerId,
+          maxUnits,
+          batch_id,
+          u.status_code,
+          responseText,
+          new Date(u.created_at).toLocaleString(),
+        ]
+          .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+          .join(",");
+      }),
+    ].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -233,15 +181,13 @@ export default function ListCustomers() {
     link.click();
     URL.revokeObjectURL(url);
   };
-
   return (
     <Layout>
       <div className="space-y-4">
         {/* Header + Filters */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-800">List Customers</h1>
-
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center border rounded-md px-2">
               <i className="bi bi-search text-slate-400" />
               <Input
@@ -251,10 +197,8 @@ export default function ListCustomers() {
                 className="border-none focus-visible:ring-0 shadow-none w-64"
               />
             </div>
-
             <div className="flex items-center gap-2">
               <label className="text-sm text-gray-600">From:</label>
-              
               <input
                 type="date"
                 value={fromDate}
@@ -271,23 +215,19 @@ export default function ListCustomers() {
                 className="border border-gray-300 rounded-md text-sm p-1"
               />
             </div>
-
             <Button onClick={handleDateFilter} disabled={loading} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
               {loading ? "Submit" : "Submit"}
             </Button>
-            {/* ✅ New Export Button */}
-    <Button
-      onClick={handleExport}
-      variant="outline"
-      size="sm"
-      className="bg-blue-500 text-white hover:bg-blue-600"
-    >
-      <i className="bi bi-download me-1"></i> Export
-    </Button>
+            <Button
+              onClick={handleExport}
+              variant="outline"
+              size="sm"
+              className="bg-blue-500 text-white hover:bg-blue-600"
+            >
+              <i className="bi bi-download me-1"></i> Export
+            </Button>
           </div>
         </div>
-        
-
         {/* Table */}
         {loading ? (
           <div className="text-center text-gray-500 py-4">Loading customers...</div>
@@ -333,7 +273,6 @@ export default function ListCustomers() {
                     })}
                   </tr>
                 </thead>
-
                 <tbody className="bg-white divide-y divide-gray-200">
                   {currentData.map((u, index) => {
                     let domain = "",
@@ -346,10 +285,8 @@ export default function ListCustomers() {
                       maxUnits = reqBody.maxUnits || "";
                       batch_id = reqBody.batch_id || "";
                       customerId = reqBody.customerId || "";
-                    } catch {}
-
+                    } catch { }
                     const responseText = u.status_code === 200 ? "ok" : u.response_body;
-
                     return (
                       <tr key={u.id || index} className="hover:bg-gray-50">
                         <td className="px-4 py-2 text-sm">{startIndex + index + 1}</td>
@@ -367,7 +304,6 @@ export default function ListCustomers() {
                 </tbody>
               </table>
             </div>
-
             {/* Pagination */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 py-4">
               <div className="flex items-center gap-2">
@@ -405,20 +341,20 @@ export default function ListCustomers() {
 
               <div className="flex items-center gap-2">
                 <label className="text-sm text-gray-600">Items per page:</label>
-              <select
-  value={itemsPerPage}
-  onChange={(e) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1);
-  }}
-  className="border border-gray-300 rounded-md text-sm p-1"
->
-  {Array.from({ length: 8 }, (_, i) => (i + 1) * 50).map((num) => (
-    <option key={num} value={num}>
-      {num}
-    </option>
-  ))}
-</select>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => {
+                    setItemsPerPage(Number(e.target.value));
+                    setCurrentPage(1);
+                  }}
+                  className="border border-gray-300 rounded-md text-sm p-1"
+                >
+                  {Array.from({ length: 8 }, (_, i) => (i + 1) * 50).map((num) => (
+                    <option key={num} value={num}>
+                      {num}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </>

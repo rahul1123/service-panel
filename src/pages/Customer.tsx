@@ -154,6 +154,41 @@ export default function CustomerFileUploads() {
       setCurrentPage(1);
      fetchCustomerFileUploads(1, fromDate, toDate);
     };
+
+   
+
+   const handleSampleExport = () => {
+  const headers = [
+    "domain",
+    "email",
+    "password",
+    "username",
+    "recoveryemail",
+    "license",
+  ];
+
+  const sampleData = [
+    [
+      "shopmonautenadsagency.info",
+      "frank@shopmonautenadsagency.info",
+      "Shopmonauten!92$XeTq",
+      "Frank Geiger",
+      "ishibolrecovery@gmail.com",
+      "3",
+    ],
+  ];
+
+  const csv =
+    [headers.join(","), ...sampleData.map((row) => row.join(","))].join("\n");
+
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "Upload_sample_customer.csv";
+  link.click();
+  URL.revokeObjectURL(url);
+};
   return (
     <Layout>
       <div className="space-y-4">
@@ -215,6 +250,11 @@ export default function CustomerFileUploads() {
                 <Button onClick={handleExport} variant="outline" className="bg-blue-500 text-white hover:bg-blue-600">
               <Download className="w-4 h-4 mr-2" />
               Export
+            </Button>
+
+             <Button onClick={handleSampleExport} variant="outline" className="bg-blue-500 text-white hover:bg-blue-600">
+              <Download className="w-4 h-4 mr-2" />
+              Download Sample File
             </Button>
         </div>
 
