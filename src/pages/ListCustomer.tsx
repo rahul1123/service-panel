@@ -41,8 +41,41 @@ export default function ListCustomers() {
         startDate: from || today,
         endDate: to || today,
       };
-      const { data } = await axios.get(url, { headers, params });
-      const list = Array.isArray(data) ? data : [];
+      // const { data } = await axios.get(url, { headers, params });
+      // const list = Array.isArray(data) ? data : [];
+          const list = [
+        {
+          id: 735,
+          batch_id: "B12345",
+          api_key: "4a4c9484ea04ea2c5838be460432bd4e",
+          app_name: "Alphoric",
+          user_id: "alphoric",
+          domain: "getestateupdate.com",
+          customer_id: "SsicvWMR5Wjyk3",
+          total_licensens: "5",
+          primary_email: "adeline.laurent@getestateupdate.com",
+          google_api_response:
+            '{"id":"115106324204311684798","primaryEmail":"adeline.laurent@getestateupdate.com","isAdmin":true,"creationTime":"2025-10-30T16:54:37.000Z"}',
+          google_api_response_code: "200",
+          created_at: "2025-10-30T16:56:37.000Z",
+        },
+        {
+          id: 736,
+          batch_id: "B56789",
+          api_key: "bcb52ed45909ea24a334c583bd0",
+          app_name: "Betabase",
+          user_id: "betabase",
+          domain: "betabase.ai",
+          customer_id: "Tgcx8RMWT72y3q",
+          total_licensens: "3",
+          primary_email: "mark.ellis@betabase.ai",
+          google_api_response:
+            '{"id":"918273645","primaryEmail":"mark.ellis@betabase.ai","isAdmin":false,"creationTime":"2025-10-29T10:22:14.000Z"}',
+          google_api_response_code: "400",
+          created_at: "2025-10-29T10:25:00.000Z",
+        },
+      ];
+
       setCustomers(list);
       setFilteredCustomers(list);
     } catch (err) {
@@ -93,7 +126,7 @@ export default function ListCustomers() {
         u.app_name?.toLowerCase().includes(q) ||
         domain.toLowerCase().includes(q) ||
         customerId.toLowerCase().includes(q) ||
-        String(u.status_code || "").toLowerCase().includes(q)
+        String(u.google_api_response_code || "").toLowerCase().includes(q)
       );
     });
     setFilteredCustomers(filtered);
@@ -152,20 +185,19 @@ export default function ListCustomers() {
       ...customers.map((u) => {
         let domain = "", maxUnits = "", batch_id = "", customerId = "";
         try {
-          const reqBody = JSON.parse(u.request_body || "{}");
-          domain = reqBody.domain || "";
-          maxUnits = reqBody.maxUnits || "";
-          batch_id = reqBody.batch_id || "";
-          customerId = reqBody.customerId || "";
+          domain = u.domain || "";
+          maxUnits = u.total_licensens || "";
+          batch_id = u.batch_id || "";
+          customerId = u.customerId || "";
         } catch { }
-        const responseText = u.status_code === 200 ? "ok" : u.response_body;
+        const responseText = u.google_api_response_code === 200 ? "ok" : u.google_api_response_code;
         return [
           u.app_name || "",
           domain,
           customerId,
           maxUnits,
           batch_id,
-          u.status_code,
+          u.google_api_response_code,
           responseText,
           new Date(u.created_at).toLocaleString(),
         ]
@@ -240,11 +272,11 @@ export default function ListCustomers() {
                     <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
                     {[
                       { label: "App Name", key: "app_name" },
-                      { label: "Status Code", key: "status_code" },
+                      { label: "Status Code", key: "google_api_response_code" },
                       { label: "Created At", key: "created_at" },
                       { label: "Domain", key: "domain" },
                       { label: "Customer Id", key: "customer_id" },
-                      { label: "Max Unit", key: "max_unit" },
+                      { label: "Total Licenses", key: "max_unit" },
                       { label: "Batch Id", key: "batch_id" },
                       { label: "Response", key: "response" },
                     ].map((col) => {
@@ -280,31 +312,32 @@ export default function ListCustomers() {
                       batch_id = "",
                       customerId = "";
                     try {
-                      const reqBody = JSON.parse(u.request_body || "{}");
-                      domain = reqBody.domain || "";
-                      maxUnits = reqBody.maxUnits || "";
-                      batch_id = reqBody.batch_id || "";
-                      customerId = reqBody.customerId || "";
+                      domain = u.domain || "";
+                      maxUnits = u.total_licensens || "";
+                      batch_id = u.batch_id || "";
+                      customerId = u.customer_id|| "";
                     } catch { }
-                    const responseText = u.status_code === 200 ? "ok" : u.response_body;
+                    const responseText =Number(u.google_api_response_code) === 200 ? "ok" : u.google_api_response_code;
                     return (
                       <tr key={u.id || index} className="hover:bg-gray-50">
                         <td className="px-4 py-2 text-sm">{startIndex + index + 1}</td>
                         <td className="px-4 py-2 text-sm">{u.app_name || "—"}</td>
                         {/* <td className="px-4 py-2 text-sm">{u.status_code || "—"}</td> */}
 
-                          <td className="px-4 py-3">
-            {u.status_code === 200 ? (
-              <span className="text-green-600 bg-green-100 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                <i className="bi bi-check-circle-fill"></i> 200
-              </span>
-            ) : (
-              <span className="text-red-600 bg-red-100 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                <i className="bi bi-exclamation-triangle-fill"></i>{" "}
-                {u.status_code}
-              </span>
-            )}
-          </td>
+  <td className="px-4 py-3">
+  {Number(u.google_api_response_code) === 200 ? (
+    <span className="flex items-center gap-1 text-green-600 bg-green-100 px-2 py-1 rounded-full text-xs font-medium">
+      <i className="bi bi-check-circle-fill"></i>
+      200
+    </span>
+  ) : (
+    <span className="flex items-center gap-1 text-red-600 bg-red-100 px-2 py-1 rounded-full text-xs font-medium">
+      <i className="bi bi-exclamation-triangle-fill"></i>
+      {u.google_api_response_code || "Error"}
+    </span>
+  )}
+</td>
+
                         <td className="px-4 py-2 text-sm">{new Date(u.created_at).toLocaleString()}</td>
                         <td className="px-4 py-2 text-sm"><i className="bi bi-globe2 text-gray-400 mr-1"></i>{domain || "—"}</td>
                         <td className="px-4 py-2 text-sm">{customerId || "—"}</td>

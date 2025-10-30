@@ -13,10 +13,13 @@ import {
   Briefcase,
   Users,
   Building2,
+  UserPlus,
+  UploadCloud,
   Calendar,
   BarChart3,
   Settings,
   LogOut,
+  List,
   User,
 } from "lucide-react";
 import { useLocation, Link } from "react-router-dom";
@@ -48,7 +51,7 @@ const menuItems = [
   {
     title: "Bulk Upload - Users",
     url: "/upload-users",
-    icon: Users,
+    icon: UploadCloud,
     roles: ["admin","customer"],
   },
   {
@@ -60,19 +63,19 @@ const menuItems = [
   {
     title: "List Customers",
     url: "/list-customers",
-    icon: Users,
+    icon: Building2,
     roles: ["admin","customer"],
   },
   {
      title: "App/Customer Onboarding",
      url: "/create-app-customer",
-     icon:Users,
+     icon:UserPlus,
      roles: ["admin"],
   },
   {
      title: "App/Customer Listing",
      url: "/list-app-user",
-     icon: Users,
+     icon: List,
      roles: ["admin"],
   }
 ];

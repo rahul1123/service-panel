@@ -167,30 +167,7 @@ export default function CustomerFileUploads() {
               className="border border-gray-300 rounded-md text-sm p-1"
             />
 
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">From:</label>
-              <input
-                type="date"
-                value={fromDate}
-                onChange={(e) => {
-                  setCurrentPage(1);
-                  setFromDate(e.target.value);
-                }}
-                className="border border-gray-300 rounded-md text-sm p-1"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">To:</label>
-              <input
-                type="date"
-                value={toDate}
-                onChange={(e) => {
-                  setCurrentPage(1);
-                  setToDate(e.target.value);
-                }}
-                className="border border-gray-300 rounded-md text-sm p-1"
-              />
-            </div>
+            
 
             <Button variant="default" onClick={handleExport} disabled={!appuser.length || loading} className="bg-blue-500 ml-2 text-sm px-3 py-2">
               Export CSV
