@@ -2,13 +2,24 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { API_BASE_URL } from "../config/api";
-
+type UserInfo = {
+  id: number;
+  email: string;
+  role: string;
+  name: string;
+  mobile: string;
+  api_key: string;
+  api_username: string;
+  api_password: string;
+  status: string;
+};
 type UserDetails = {
   id: number;
   name: string;
   email: string;
   roles: string[];
   token: string;
+  userInfo:UserInfo[];
 };
 
 interface AuthContextType {
@@ -79,6 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email: string;
         role?: string | string[];
         "cognito:groups"?: string[] | string;
+        userInfo?: UserInfo[];
         exp: number;
       };
 
@@ -111,6 +123,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       const decoded: DecodedToken = jwtDecode(accessToken);
 
+      console.log(decoded,'decodedInformation')
+
       let userRoles: string[] = [];
       if (Array.isArray(decoded["cognito:groups"])) {
         userRoles = decoded["cognito:groups"];
@@ -128,6 +142,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         email: decoded.email,
         roles: userRoles,
         token: accessToken,
+        userInfo:decoded.userInfo,
       };
 
       setUser(userData);
@@ -174,11 +189,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const decoded: any = jwtDecode(token);
       const roles = getUserRoles();
       return {
-        id: decoded.id,
+        id: decoded.userId,
         name: decoded.name,
         email: decoded.email,
         roles,
         token,
+        userInfo:decoded.userInfo,
       };
     } catch (err) {
       console.error("Token decode error", err);

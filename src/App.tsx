@@ -16,10 +16,10 @@ const ListUsers = lazy(() => import("./pages/ListUsers"));
 const ListCustomers = lazy(() => import("./pages/ListCustomer"));
 const CreateAppCustomers = lazy(() => import("./pages/CreateAppCustomers"));
 const ListAppUsers = lazy(() => import("./pages/ListAppUsers"));
-const Applications = lazy(() => import("./pages/Application"));
 import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PublicRoute from "@/components/PublicRoute";
+const Profile = lazy(() => import("./pages/Profile"));
 const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -97,6 +97,17 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+
+                <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile/>
+                  </ProtectedRoute>
+                }
+              />
+
+              
               <Route path="*" element={<NotFound />} />
             </Routes>
             </Suspense>

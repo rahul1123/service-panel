@@ -22,7 +22,7 @@ import {
   List,
   User,
 } from "lucide-react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link,useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
@@ -33,8 +33,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useNavigate } from "react-router-dom";
-
 const menuItems = [
   {
     title: "Dashboard",
@@ -177,7 +175,9 @@ export default function Layout({ children }: LayoutProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>
+                      <Link to="/profile" className="flex items-center">
                       <User className="w-4 h-4 mr-2" /> Profile
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={handleLogout}
