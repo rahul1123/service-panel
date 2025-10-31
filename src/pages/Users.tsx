@@ -114,7 +114,7 @@ export default function UserFileUploads() {
       u.batch_id,
       u.bulk_type,
       u.file_name,
-      u.file_path || "N/A",
+    //  u.file_path || "N/A",
       u.status === 0 ? "Pending" : "Completed",
       u.added_by || "N/A",
       new Date(u.added_on).toLocaleString(),
@@ -293,7 +293,7 @@ function getStatusIcon(status: number) {
                   <th onClick={() => handleSort("file_name")} className="cursor-pointer px-4 py-2 text-left text-sm font-medium text-gray-700">
                     File Name {getArrow("file_name")}
                   </th>
-                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Path</th>
+{/*                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">File Path</th>*/}
                   <th onClick={() => handleSort("status")} className="cursor-pointer px-4 py-2 text-left text-sm font-medium text-gray-700">
                     Status {getArrow("status")}
                   </th>
@@ -319,7 +319,7 @@ function getStatusIcon(status: number) {
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.batch_id}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.bulk_type}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_name}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_path}</td>
+                      {/*<td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_path}</td>*/}
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{getStatusIcon(file.status)}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.total_count}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.added_by}</td>

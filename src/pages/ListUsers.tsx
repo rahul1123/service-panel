@@ -12,8 +12,8 @@ export default function CustomerFileUploads() {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(100);
- const [searchQuery, setSearchQuery] = useState("");
- const [activeFromDate, setActiveFromDate] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFromDate, setActiveFromDate] = useState("");
   const [activeToDate, setActiveToDate] = useState("");
   // Date filter
   const [fromDate, setFromDate] = useState("");
@@ -37,17 +37,17 @@ export default function CustomerFileUploads() {
         toast.error("No valid token found. Please log in again.");
         return;
       }
-   const today = new Date().toISOString().split("T")[0];
+      const today = new Date().toISOString().split("T")[0];
       let url = `${API_BASE_URL}/list/users`;
       const headers = {
         "x-api-key": "f7ab26185b14fc87db613850887be3b8",
         Authorization: `Bearer ${token}`,
       };
-  const params: any = {
+      const params: any = {
         startDate: from || today,
         endDate: to || today,
       };
-      const { data } = await axios.get(url, { headers,params });
+      const { data } = await axios.get(url, { headers, params });
       setUser(data?.length ? data : []);
     } catch (err) {
       console.error("Failed to fetch users:", err);
@@ -78,13 +78,13 @@ export default function CustomerFileUploads() {
     let filtered = user;
     // Search filter
     if (searchQuery.trim()) {
-      const term =  searchQuery.toLowerCase();
+      const term = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (u) =>
-          u.primaryEmail?.toLowerCase().includes(searchQuery) ||
-          u.Username?.toLowerCase().includes(searchQuery) ||
+          u.email?.includes(searchQuery) ||
+          u.username?.includes(searchQuery) ||
           u.batch_id?.toString().includes(searchQuery) ||
-          u.message?.toString().includes(searchQuery)
+          u.msg?.toString().includes(searchQuery)
       );
     }
     // Sorting
@@ -144,22 +144,18 @@ export default function CustomerFileUploads() {
       toast.error("Please wait, data is still loading...");
       return;
     }
-    // if (!filteredAndSortedUsers.length) {
-    //   toast.error("No user data available to export");
-    //   return;
-    // }
-      if (!user.length) {
-    toast.error("No data to export");
-    return;
-  }
+    if (!user.length) {
+      toast.error("No data to export");
+      return;
+    }
 
-    const headers = ["#", "Primary Email", "Username", "Batch ID", "Message", "Created At"];
+    const headers = ["#", "Email", "Username", "Batch ID", "Message", "Created At"];
     const rows = user.map((file, index) => [
       index + 1,
-      file.primaryEmail || "",
-      file.Username || "",
+      file.email || "",
+      file.username || "",
       file.batch_id || "",
-      file.message || "",
+      file.msg || "",
       file.created_at ? new Date(file.created_at).toLocaleString() : "",
     ]);
 
@@ -177,7 +173,7 @@ export default function CustomerFileUploads() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "user_list.csv";
+    link.download = `Users_${new Date().toISOString().replace(/[:.]/g, "-")}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -187,7 +183,7 @@ export default function CustomerFileUploads() {
     if (sortConfig?.key !== key) return "↕";
     return sortConfig.direction === "asc" ? "▲" : "▼";
   };
-    const handleDateFilter = () => {
+  const handleDateFilter = () => {
     if (!fromDate || !toDate) {
       toast.error("Please select both From and To dates");
       return;
@@ -211,15 +207,15 @@ export default function CustomerFileUploads() {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <h1 className="text-2xl font-bold text-slate-800">List Users</h1>
 
-         <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center border rounded-md px-2">
               <i className="bi bi-search text-slate-400" />
-            <Input
-  placeholder="Search by Primary Email, username..."
-  value={searchQuery}
-  onChange={(e) => setSearchQuery(e.target.value)}
-  className="border-none focus-visible:ring-0 shadow-none w-64"
-/>
+              <Input
+                placeholder="Search by Primary Email, username..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="border-none focus-visible:ring-0 shadow-none w-64"
+              />
             </div>
 
             <div className="flex items-center gap-2">
@@ -249,140 +245,138 @@ export default function CustomerFileUploads() {
               size="sm"
               onClick={handleExport}
               disabled={loading || !user.length}
-                className="bg-blue-500 text-white hover:bg-blue-600"
+              className="bg-blue-500 text-white hover:bg-blue-600"
             >
               Export CSV
             </Button>
           </div>
         </div>
 
-            
-          </div>
-     
 
-        {/* Table Section */}
-        {loading ? (
-          <div className="text-center text-gray-500 py-4">Loading users...</div>
-        ) : filteredAndSortedUsers.length > 0 ? (
-          <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
-                    <th
-                      className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer"
-                      onClick={() => handleSort("primaryEmail")}
-                    >
-                      Primary Email {getSortIcon("primaryEmail")}
-                    </th>
-                    <th
-                      className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer"
-                      onClick={() => handleSort("Username")}
-                    >
-                      Username {getSortIcon("Username")}
-                    </th>
-                    <th
-                      className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer"
-                      onClick={() => handleSort("batch_id")}
-                    >
-                      Batch ID {getSortIcon("batch_id")}
-                    </th>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
-                      Message
-                    </th>
-                    <th
-                      className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer"
-                      onClick={() => handleSort("created_at")}
-                    >
-                      Created At {getSortIcon("created_at")}
-                    </th>
+      </div>
+
+
+      {/* Table Section */}
+      {loading ? (
+        <div className="text-center text-gray-500 py-4">Loading users...</div>
+      ) : filteredAndSortedUsers.length > 0 ? (
+        <>
+          <div className="overflow-x-auto">
+            <table className="min-w-full border border-gray-300 divide-y divide-gray-200">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
+                  <th
+                    className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer"
+                    onClick={() => handleSort("primaryEmail")}
+                  >
+                    Email {getSortIcon("primaryEmail")}
+                  </th>
+                  <th
+                    className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer"
+                    onClick={() => handleSort("Username")}
+                  >
+                    Username {getSortIcon("Username")}
+                  </th>
+                  <th
+                    className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer"
+                    onClick={() => handleSort("batch_id")}
+                  >
+                    Batch ID {getSortIcon("batch_id")}
+                  </th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                    Message
+                  </th>
+                  <th
+                    className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer"
+                    onClick={() => handleSort("created_at")}
+                  >
+                    Created At {getSortIcon("created_at")}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {currentUsers.map((file, index) => (
+                  <tr key={file.id || index} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 text-sm text-gray-900">{startIndex + index + 1}</td>
+                    <td className="px-4 py-2 text-sm text-gray-900"><i className="bi bi-envelope text-gray-400 mr-1"></i>{file.email}</td>
+                    <td className="px-4 py-2 text-sm text-gray-900">{file.username}</td>
+                    <td className="px-4 py-2 text-sm text-gray-900"> <span className="text-gray-900">{file.batch_id || "N/A"}</span></td>
+                    <td className="px-4 py-2 text-sm text-gray-900">{file.msg || "N/A"}</td>
+                    <td className="px-4 py-2 text-sm text-gray-500">
+                      {new Date(file.created_at).toLocaleString()}
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {currentUsers.map((file, index) => (
-                    <tr key={file.id || index} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 text-sm text-gray-900">{startIndex + index + 1}</td>
-                      <td className="px-4 py-2 text-sm text-gray-900"><i className="bi bi-envelope text-gray-400 mr-1"></i>{file.primaryEmail}</td>
-                      <td className="px-4 py-2 text-sm text-gray-900">{file.Username}</td>
-                      <td className="px-4 py-2 text-sm text-gray-900"> <span className="text-gray-900">{file.batch_id || "N/A"}</span></td>
-                      <td className="px-4 py-2 text-sm text-gray-900">{file.message || "N/A"}</td>
-                      <td className="px-4 py-2 text-sm text-gray-500">
-                        {new Date(file.created_at).toLocaleString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-            {/* Pagination */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 py-4">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={currentPage === 1}
-                  onClick={() => handlePageChange(currentPage - 1)}
-                >
-                  Previous
-                </Button>
+          {/* Pagination */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 py-4">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                Previous
+              </Button>
 
-                <div className="flex gap-1">
-                  {getVisiblePages().map((page) => (
-                    <Button
-                      key={page}
-                      variant={page === currentPage ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => handlePageChange(page)}
-                        
-  className={`flex items-center gap-1 transition-colors ${
-      page === currentPage
-        ? "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
-        : "bg-white text-blue-500 border border-blue-400 hover:bg-blue-50"
-    }`}
-                    >
-                      {page}
-                    </Button>
-                  ))}
-                </div>
+              <div className="flex gap-1">
+                {getVisiblePages().map((page) => (
+                  <Button
+                    key={page}
+                    variant={page === currentPage ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handlePageChange(page)}
 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={currentPage === totalPages}
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  className={`flex items-center gap-1 bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 transition-colors ${
-                  currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
-                 }`}
-                >
-                  Next
-                </Button>
+                    className={`flex items-center gap-1 transition-colors ${page === currentPage
+                        ? "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
+                        : "bg-white text-blue-500 border border-blue-400 hover:bg-blue-50"
+                      }`}
+                  >
+                    {page}
+                  </Button>
+                ))}
               </div>
 
-              <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-600">Items per page:</label>
-                              <select
-  value={itemsPerPage}
-  onChange={(e) => {
-    setItemsPerPage(Number(e.target.value));
-    setCurrentPage(1);
-  }}
-  className="border border-blue-300 rounded-md text-sm p-1"
->
-  {Array.from({ length: 8 }, (_, i) => (i + 1) * 50).map((num) => (
-    <option key={num} value={num}>
-      {num}
-    </option>
-  ))}
-</select>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === totalPages}
+                onClick={() => handlePageChange(currentPage + 1)}
+                className={`flex items-center gap-1 bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 transition-colors ${currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+              >
+                Next
+              </Button>
             </div>
-          </>
-        ) : (
-          <div className="text-center text-gray-500 py-4">No users found.</div>
-        )}
-     
+
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600">Items per page:</label>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                className="border border-blue-300 rounded-md text-sm p-1"
+              >
+                {Array.from({ length: 8 }, (_, i) => (i + 1) * 50).map((num) => (
+                  <option key={num} value={num}>
+                    {num}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="text-center text-gray-500 py-4">No users found.</div>
+      )}
+
     </Layout>
   );
 }

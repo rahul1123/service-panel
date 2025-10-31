@@ -299,7 +299,7 @@ function getStatusIcon(status: number) {
                   { label: "Batch ID", key: "batch_id" },
                   { label: "Bulk Type", key: "bulk_type" },
                   { label: "File Name", key: "file_name" },
-                  { label: "File Path", key: "" },
+                  //{ label: "File Path", key: "" },
                   { label: "Status", key: "status" },
                   { label: "Total Count", key: "" },
                   { label: "Added By", key: "added_by" },
@@ -319,7 +319,7 @@ function getStatusIcon(status: number) {
                   <td className="px-4 py-2 text-sm text-gray-900">{file.batch_id}</td>
                   <td className="px-4 py-2 text-sm text-gray-900">{file.bulk_type}</td>
                   <td className="px-4 py-2 text-sm text-gray-900">{file.file_name}</td>
-                  <td className="px-4 py-2 text-sm text-gray-900">{file.file_path}</td>
+                  {/* <td className="px-4 py-2 text-sm text-gray-900">{file.file_path}</td>*/}
                   <td className="px-4 py-2 text-sm text-gray-900">{getStatusIcon(file.status)}
                     {/* {file.status === 1 ? "Completed" : "Pending"} */}
                     </td>
