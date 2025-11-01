@@ -72,8 +72,6 @@ export default function CustomerFileUploads() {
 
     try {
       setLoading(true);
-
-      //update the user password call  api end 
       // TODO: Replace this with your actual API call to update password
       console.log("Updating password:", formData.password);
       alert("Password updated successfully!");
@@ -89,7 +87,48 @@ export default function CustomerFileUploads() {
   return (
     <Layout>
       <div className="space-y-6 relative">
-        <h1 className="text-2xl font-bold text-slate-800">Profile Information</h1>
+       <div className="flex items-center justify-between">
+  <h1 className="text-2xl font-bold text-slate-800">Profile Information</h1>
+
+  <div className="flex items-center space-x-4">
+    {/* Status */}
+    <div className="flex items-center space-x-1">
+      {formData.status === "active" ? (
+        <span className="flex items-center text-green-600 text-sm font-medium">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-4 h-4 mr-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          Active
+        </span>
+      ) : (
+        <span className="text-red-600 text-sm font-medium">Inactive</span>
+      )}
+    </div>
+
+    {/* Role */}
+    <div
+      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+        formData.role === "admin"
+          ? "bg-purple-100 text-purple-700"
+          : "bg-blue-100 text-blue-700"
+      }`}
+    >
+      {formData.role.charAt(0).toUpperCase() + formData.role.slice(1)}
+    </div>
+  </div>
+</div>
+
 
         {/* Name */}
         <div>
@@ -214,34 +253,6 @@ export default function CustomerFileUploads() {
             className="w-full border rounded-md p-2"
             readOnly
           />
-        </div>
-
-        {/* Status */}
-        <div>
-          <label className="block text-sm font-medium">Status</label>
-          <select
-            name="status"
-            value={formData.status}
-            onChange={handleChange}
-            className="w-full border rounded-md p-2"
-          >
-            <option value="active">Active</option>
-            <option value="inactive">Inactive</option>
-          </select>
-        </div>
-
-        {/* Role */}
-        <div>
-          <label className="block text-sm font-medium">Role</label>
-          <select
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-            className="w-full border rounded-md p-2"
-          >
-            <option value="customer">Customer</option>
-            <option value="admin">Admin</option>
-          </select>
         </div>
       </div>
     </Layout>
