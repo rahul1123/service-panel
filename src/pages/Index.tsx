@@ -168,7 +168,7 @@ const Dashboard = () => {
           </Card>
 
           {/* Bar Chart - Success vs Failure */}
-          <Card className="border-0 shadow-sm bg-white rounded-2xl">
+          {/* <Card className="border-0 shadow-sm bg-white rounded-2xl">
             <CardHeader>
               <CardTitle>Success vs Failure (Daily)</CardTitle>
             </CardHeader>
@@ -200,7 +200,7 @@ const Dashboard = () => {
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Pie Chart - Overall Summary */}
           <Card className="border-0 shadow-sm bg-white rounded-2xl">
