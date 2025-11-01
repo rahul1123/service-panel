@@ -119,13 +119,6 @@ const Dashboard = () => {
                   <h2 className="text-2xl font-bold text-gray-800 mt-1">
                     {m.value}
                   </h2>
-                  <p
-                    className={`text-sm mt-1 ${
-                      m.trend.includes("-") ? "text-red-500" : "text-green-600"
-                    }`}
-                  >
-                    {m.trend}
-                  </p>
                 </div>
                 <div className={`p-3 rounded-full ${m.color}`}>
                   <m.icon className="w-6 h-6" />
