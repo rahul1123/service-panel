@@ -63,28 +63,28 @@ const Dashboard = () => {
 
   const topMetrics = [
     {
-      title: "Total Views",
+      title: "Total Customers (Success)",
       value: "3.5K",
       icon: Eye,
       trend: "+0.43%",
       color: "bg-blue-100 text-blue-600",
     },
     {
-      title: "Total Profit",
+      title: "Total Users (Success)",
       value: "$4.2K",
       icon: DollarSign,
       trend: "+4.35%",
       color: "bg-green-100 text-green-600",
     },
     {
-      title: "Total Products",
+      title: "Total Customer (Failure)",
       value: "3.5K",
       icon: Package,
       trend: "+2.59%",
       color: "bg-purple-100 text-purple-600",
     },
     {
-      title: "Total Users",
+      title: "Total Users (Failure)",
       value: "3.5K",
       icon: Users,
       trend: "-0.95%",
@@ -142,7 +142,7 @@ const Dashboard = () => {
           {/* Payments Overview */}
           <Card className="border-0 shadow-sm bg-white rounded-2xl">
             <CardHeader>
-              <CardTitle>Payments Overview</CardTitle>
+              <CardTitle>Customer vs Users</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>

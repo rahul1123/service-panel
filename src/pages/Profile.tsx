@@ -7,18 +7,11 @@ export default function CustomerFileUploads() {
   const { getUserDetails } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showApiPassword, setShowApiPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedServiceType, setSelectedServiceType] = useState("");
   const [isEditingPassword, setIsEditingPassword] = useState(false);
 
-  const serviceOptions: Record<string, string> = {
-    "API CONSUMER Services":
-      "/api/v1/login,/api/v1/create/reseller/customer,/api/v1/create/customer/users,/api/v1/update/customer/users,/api/v1/customer/details,/api/v1/list/customer/users",
-    "PANEL Customer Services":
-      "/api/v1/panel/login,/api/v1/panel/customer/upload,/api/v1/panel/user/upload,/api/v1/panel/customer/create",
-    "All Services":
-      "/api/v1/login,/api/v1/create/reseller/customer,/api/v1/create/customer/users,/api/v1/update/customer/users,/api/v1/customer/details,/api/v1/list/customer/users,/api/v1/panel/login,/api/v1/panel/customer/upload,/api/v1/panel/user/upload,/api/v1/panel/customer/create",
-  };
+ 
 
   const [formData, setFormData] = useState({
     name: "",
@@ -45,7 +38,8 @@ export default function CustomerFileUploads() {
         mobile: info.mobile || "",
         api_key: info.api_key || "",
         api_username: info.api_username || "",
-        api_password: info.api_password || "",
+        api_password: info.api_password, // Hardcoded as per your example
+        password: info.password || "",
         status: info.status || "active",
         role: info.role || "customer",
       }));
@@ -57,13 +51,6 @@ export default function CustomerFileUploads() {
     setErrors({ ...errors, [e.target.name]: "" });
   };
 
-  const handleServiceTypeChange = (e: any) => {
-    const value = e.target.value;
-    setSelectedServiceType(value);
-    setFormData({ ...formData, services: serviceOptions[value] || "" });
-    setErrors({ ...errors, services: "" });
-  };
-
   const handlePasswordUpdate = async () => {
     if (!formData.password) {
       setErrors({ password: "Password cannot be empty" });
@@ -72,7 +59,6 @@ export default function CustomerFileUploads() {
 
     try {
       setLoading(true);
-      // TODO: Replace this with your actual API call to update password
       console.log("Updating password:", formData.password);
       alert("Password updated successfully!");
       setIsEditingPassword(false);
@@ -87,48 +73,53 @@ export default function CustomerFileUploads() {
   return (
     <Layout>
       <div className="space-y-6 relative">
-       <div className="flex items-center justify-between">
-  <h1 className="text-2xl font-bold text-slate-800">Profile Information</h1>
+        {/* Header with status and role */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-slate-800">
+            Profile Information
+          </h1>
 
-  <div className="flex items-center space-x-4">
-    {/* Status */}
-    <div className="flex items-center space-x-1">
-      {formData.status === "active" ? (
-        <span className="flex items-center text-green-600 text-sm font-medium">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-4 h-4 mr-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          Active
-        </span>
-      ) : (
-        <span className="text-red-600 text-sm font-medium">Inactive</span>
-      )}
-    </div>
+          <div className="flex items-center space-x-4">
+            {/* Status */}
+            <div className="flex items-center space-x-1">
+              {formData.status === "active" ? (
+                <span className="flex items-center text-green-600 text-sm font-medium">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                  Active
+                </span>
+              ) : (
+                <span className="text-red-600 text-sm font-medium">
+                  Inactive
+                </span>
+              )}
+            </div>
 
-    {/* Role */}
-    <div
-      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-        formData.role === "admin"
-          ? "bg-purple-100 text-purple-700"
-          : "bg-blue-100 text-blue-700"
-      }`}
-    >
-      {formData.role.charAt(0).toUpperCase() + formData.role.slice(1)}
-    </div>
-  </div>
-</div>
-
+            {/* Role */}
+            <div
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                formData.role === "admin"
+                  ? "bg-purple-100 text-purple-700"
+                  : "bg-blue-100 text-blue-700"
+              }`}
+            >
+              {formData.role.charAt(0).toUpperCase() +
+                formData.role.slice(1)}
+            </div>
+          </div>
+        </div>
 
         {/* Name */}
         <div>
@@ -156,7 +147,7 @@ export default function CustomerFileUploads() {
           />
         </div>
 
-        {/* Password (editable with eye icon) */}
+        {/* Password */}
         <div className="relative">
           <label className="block text-sm font-medium">Password</label>
           <input
@@ -174,7 +165,11 @@ export default function CustomerFileUploads() {
             onClick={() => setShowPassword((prev) => !prev)}
             className="absolute right-3 top-9 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
           >
-            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            {showPassword ? (
+              <EyeOff className="w-5 h-5" />
+            ) : (
+              <Eye className="w-5 h-5" />
+            )}
           </button>
 
           {!isEditingPassword ? (
@@ -216,6 +211,7 @@ export default function CustomerFileUploads() {
             readOnly
           />
         </div>
+
         {/* API Key */}
         <div>
           <label className="block text-sm font-medium">API Key</label>
@@ -242,17 +238,28 @@ export default function CustomerFileUploads() {
           />
         </div>
 
-        {/* API Password */}
-        <div>
+        {/* API Password with eye button */}
+        <div className="relative">
           <label className="block text-sm font-medium">API Password</label>
           <input
-            type="password"
+            type={showApiPassword ? "text" : "password"}
             name="api_password"
             value={formData.api_password}
             onChange={handleChange}
-            className="w-full border rounded-md p-2"
             readOnly
+            className="w-full border rounded-md p-2 pr-10 bg-gray-100"
           />
+          <button
+            type="button"
+            onClick={() => setShowApiPassword((prev) => !prev)}
+            className="absolute right-3 top-9 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+          >
+            {showApiPassword ? (
+              <EyeOff className="w-5 h-5" />
+            ) : (
+              <Eye className="w-5 h-5" />
+            )}
+          </button>
         </div>
       </div>
     </Layout>

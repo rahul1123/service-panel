@@ -11,6 +11,7 @@ type UserInfo = {
   api_key: string;
   api_username: string;
   api_password: string;
+  password:string;
   status: string;
 };
 type UserDetails = {
