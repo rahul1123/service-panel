@@ -15,13 +15,12 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Users, Eye, Package, DollarSign } from "lucide-react";
 
-const Dashboard = () => {
+export default function Dashboard() {
   const [loading, setLoading] = useState(false);
-
-  // 🔹 Sample Data for Customer and User (Monthly)
+  // 📊 Monthly Data - Customers vs Users
   const monthlyData = [
     { month: "Jan", customers: 200, users: 150 },
     { month: "Feb", customers: 250, users: 180 },
@@ -37,7 +36,7 @@ const Dashboard = () => {
     { month: "Dec", customers: 580, users: 420 },
   ];
 
-  // 🔹 Sample Data for Success vs Failure (Daily)
+  // 📈 Success vs Failure (Daily)
   const successData = [
     { day: "Mon", success: 120, failure: 30 },
     { day: "Tue", success: 140, failure: 25 },
@@ -48,7 +47,7 @@ const Dashboard = () => {
     { day: "Sun", success: 160, failure: 25 },
   ];
 
-  // 🔹 Sample Overall Pie Data
+  // 🥧 Overall Summary
   const pieData = [
     { name: "Customer Success", value: 3000 },
     { name: "Customer Failure", value: 700 },
@@ -58,18 +57,18 @@ const Dashboard = () => {
 
   const COLORS = ["#3b82f6", "#ef4444", "#22c55e", "#a855f7"];
 
-  // 🔹 Top Metrics
+  // 🔹 Summary Cards
   const topMetrics = [
     {
       title: "Total Customers (Success)",
-      value: "3.5K",
+      value: "2300",
       icon: Eye,
       trend: "+0.43%",
       color: "bg-blue-100 text-blue-600",
     },
     {
       title: "Total Users (Success)",
-      value: "$4.2K",
+      value: "2700",
       icon: DollarSign,
       trend: "+4.35%",
       color: "bg-green-100 text-green-600",
@@ -93,9 +92,9 @@ const Dashboard = () => {
   return (
     <Layout>
       <div className="p-6 space-y-8">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
+        {/* ===== HEADER ===== */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h1 className="text-2xl font-bold text-gray-800">📊 Dashboard Overview</h1>
           <div className="flex items-center gap-3">
             <button className="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg">
               Monthly
@@ -106,37 +105,34 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Top Metric Cards */}
+        {/* ===== TOP METRIC CARDS ===== */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {topMetrics.map((m, i) => (
+          {topMetrics.map((metric, i) => (
             <Card
               key={i}
               className="border-0 shadow-sm bg-white rounded-2xl p-4 hover:shadow-md transition"
             >
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-sm text-gray-500">{m.title}</p>
-                  <h2 className="text-2xl font-bold text-gray-800 mt-1">
-                    {m.value}
-                  </h2>
-                </div>
-                <div className={`p-3 rounded-full ${m.color}`}>
-                  <m.icon className="w-6 h-6" />
+                  <h1 className="text-sm text-gray-500">{metric.title}</h1>
+                  <h4 className="text-2xl font-bold text-gray-800 mt-1">
+                    {metric.value}
+                  </h4>
                 </div>
               </div>
             </Card>
           ))}
         </div>
 
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {/* Line Chart - Customer vs User (Monthly) */}
-          <Card className="border-0 shadow-sm bg-white rounded-2xl">
+        {/* ===== CHARTS SECTION ===== */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* LINE CHART */}
+          <Card className="border-0 shadow-sm bg-white rounded-2xl xl:col-span-2">
             <CardHeader>
-              <CardTitle>Customer vs User (Monthly Growth)</CardTitle>
+              <CardTitle>Customer vs User Growth (Monthly)</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={monthlyData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="month" stroke="#9ca3af" />
@@ -167,48 +163,13 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Bar Chart - Success vs Failure */}
-          {/* <Card className="border-0 shadow-sm bg-white rounded-2xl">
-            <CardHeader>
-              <CardTitle>Success vs Failure (Daily)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
-                <BarChart data={successData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="day" stroke="#9ca3af" />
-                  <YAxis stroke="#9ca3af" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "white",
-                      border: "1px solid #e5e7eb",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Bar
-                    dataKey="success"
-                    fill="#22c55e"
-                    radius={[6, 6, 0, 0]}
-                    barSize={20}
-                  />
-                  <Bar
-                    dataKey="failure"
-                    fill="#ef4444"
-                    radius={[6, 6, 0, 0]}
-                    barSize={20}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card> */}
-
-          {/* Pie Chart - Overall Summary */}
+          {/* PIE CHART */}
           <Card className="border-0 shadow-sm bg-white rounded-2xl">
             <CardHeader>
-              <CardTitle>Overall Success / Failure</CardTitle>
+              <CardTitle>Overall Success vs Failure</CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={280}>
+              <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
                   <Pie
                     data={pieData}
@@ -238,9 +199,34 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* ===== BAR CHART SECTION ===== */}
+        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="border-0 shadow-sm bg-white rounded-2xl">
+            <CardHeader>
+              <CardTitle>📊 Daily Success vs Failure</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={successData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="day" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "white",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                    }}
+                  />
+                  <Bar dataKey="success" fill="#22c55e" barSize={40} radius={[8, 8, 0, 0]} />
+                  <Bar dataKey="failure" fill="#ef4444" barSize={40} radius={[8, 8, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div> */}
       </div>
     </Layout>
   );
-};
-
-export default Dashboard;
+}
