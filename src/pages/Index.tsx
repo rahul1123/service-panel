@@ -201,7 +201,7 @@ export default function Dashboard() {
         </div>
 
         {/* ===== BAR CHART SECTION ===== */}
-        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="border-0 shadow-sm bg-white rounded-2xl">
             <CardHeader>
               <CardTitle>📊 Daily Success vs Failure</CardTitle>
@@ -225,7 +225,7 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-        </div> */}
+        </div>
       </div>
     </Layout>
   );
