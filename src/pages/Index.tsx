@@ -76,7 +76,7 @@ export default function Dashboard() {
     const fromDate = from || today;
     const toDate = to || today;
     const query = `?from=${fromDate}&to=${toDate}`;
-    // const { data } = await axios.get(`https://gwsapi.amyntas.in/api/v1/panel/list/dashboard${query}`, {
+    // const { data } = await axios.get(`${API_BASE_URL}/list/dashboard${query}`, {
      const { data } = await axios.get(`https://gwsapi.amyntas.in/api/v1/panel/list/dashboard?from=2025-11-02&to=2025-11-02`, {
       headers: {
         "x-api-key": "f7ab26185b14fc87db613850887be3b8",
