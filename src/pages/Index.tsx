@@ -19,8 +19,9 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { Users } from "lucide-react";
+import { Users, Eye, Package, DollarSign } from "lucide-react";
 import { API_BASE_URL } from "../config/api";
+
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
@@ -132,6 +133,7 @@ export default function Dashboard() {
     setActiveToDate(toDate);
     fetchDashboardData(fromDate, toDate);
   };
+
   return (
     <Layout>
       <div className="p-6 space-y-8">
@@ -139,34 +141,35 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-800">📊 Dashboard Overview</h1>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">From:</label>
-              <input
-                type="date"
-                value={fromDate}
-                onChange={e => setFromDate(e.target.value)}
-                className="border rounded p-2"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="text-sm text-gray-600">To:</label>
-              <input
-                type="date"
-                value={toDate}
-                onChange={e => setToDate(e.target.value)}
-                className="border rounded p-2"
-              />
-            </div>
-            <Button onClick={handleDateFilter} disabled={loading} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
-              {loading ? "Submit" : "Submit"}
-            </Button>
-          </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-gray-600">From:</label>
+                      <input
+                        type="date"
+                        value={fromDate}
+                        onChange={e => setFromDate(e.target.value)}
+                        className="border rounded p-2"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-gray-600">To:</label>
+                      <input
+                        type="date"
+                        value={toDate}
+                        onChange={e => setToDate(e.target.value)}
+                        className="border rounded p-2"
+                      />
+                    </div>
+                    <Button onClick={handleDateFilter} disabled={loading} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
+                      {loading ? "Submit" : "Submit"}
+                    </Button>
+                  </div>
         </div>
-        {/* ===== TOP METRICS ===== */}
+
+        {/* ===== TOP METRIC CARDS ===== */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {metricCards.map((metric, index) => (
+          {metricCards.map((metric, i) => (
             <Card
-              key={index}
+              key={i}
               className="border-0 shadow-sm bg-white rounded-2xl p-4 hover:shadow-md transition"
             >
               <div className="flex justify-between items-center">
@@ -176,15 +179,13 @@ export default function Dashboard() {
                     {metric.value}
                   </h4>
                 </div>
-                <div className={`p-3 rounded-full ${metric.color}`}>
-                  <Users className="w-5 h-5" />
-                </div>
               </div>
             </Card>
           ))}
         </div>
+
         {/* ===== CHARTS SECTION ===== */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-1 gap-6">
           {/* LINE CHART */}
           <Card className="border-0 shadow-sm bg-white rounded-2xl xl:col-span-2">
             <CardHeader>
@@ -209,7 +210,6 @@ export default function Dashboard() {
                     stroke="#3b82f6"
                     strokeWidth={3}
                     dot={{ fill: "#3b82f6" }}
-                    isAnimationActive
                   />
                   <Line
                     type="monotone"
@@ -217,13 +217,12 @@ export default function Dashboard() {
                     stroke="#8b5cf6"
                     strokeWidth={3}
                     dot={{ fill: "#8b5cf6" }}
-                    isAnimationActive
                   />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
-          {/* BAR CHART */}
+          {/* ===== BAR CHART SECTION ===== */}
           <Card className="border-0 shadow-sm bg-white rounded-2xl">
             <CardHeader>
               <CardTitle>📊 Daily Success vs Failure</CardTitle>
@@ -247,8 +246,13 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
+
+        
+          
         </div>
-        {/* PIE CHART */}
+
+        
+          {/* PIE CHART */}
         <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
           <Card className="border-0 shadow-sm bg-white rounded-2xl">
             <CardHeader>
@@ -266,7 +270,10 @@ export default function Dashboard() {
                     label
                   >
                     {pieChartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
                     ))}
                   </Pie>
                   <Tooltip
