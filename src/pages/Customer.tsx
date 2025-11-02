@@ -17,6 +17,8 @@ interface CustomerFileUpload {
   file_path: string;
   status: number; // 0 = Pending, 1 = Completed
   total_count: string;
+  total_success: string;
+  total_failure: string;
   added_by: string;
   added_on: string;
   completed_at: string | null;
@@ -299,9 +301,10 @@ function getStatusIcon(status: number) {
                   { label: "Batch ID", key: "batch_id" },
                   { label: "Bulk Type", key: "bulk_type" },
                   { label: "File Name", key: "file_name" },
-                  //{ label: "File Path", key: "" },
                   { label: "Status", key: "status" },
                   { label: "Total Count", key: "" },
+                  { label: "Total Success", key: "" },
+                  { label: "Total Failure", key: "" },
                   { label: "Added By", key: "added_by" },
                   { label: "Added On", key: "added_on" },
                   { label: "Completed At", key: "completed_at" },
@@ -319,10 +322,11 @@ function getStatusIcon(status: number) {
                   <td className="px-4 py-2 text-sm text-gray-900">{file.batch_id}</td>
                   <td className="px-4 py-2 text-sm text-gray-900">{file.bulk_type}</td>
                   <td className="px-4 py-2 text-sm text-gray-900">{file.file_name}</td>
-                  {/* <td className="px-4 py-2 text-sm text-gray-900">{file.file_path}</td>*/}
                   <td className="px-4 py-2 text-sm text-gray-900">{getStatusIcon(file.status)}
                     {/* {file.status === 1 ? "Completed" : "Pending"} */}
                     </td>
+                  <td className="px-4 py-2 text-sm text-gray-900">{file.total_count}</td>
+                  <td className="px-4 py-2 text-sm text-gray-900">{file.total_success}</td>
                   <td className="px-4 py-2 text-sm text-gray-900">{file.total_count}</td>
                   <td className="px-4 py-2 text-sm text-gray-900">{file.added_by}</td>
                   <td className="px-4 py-2 text-sm text-gray-500">{new Date(file.added_on).toLocaleString()}</td>

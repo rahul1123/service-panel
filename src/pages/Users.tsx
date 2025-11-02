@@ -18,6 +18,8 @@ interface UserFileUpload {
   file_path: string;
   status: number;
   total_count?: string;
+  total_success?: string;
+  total_failure?: string;
   added_by?: string;
   added_on: string;
   completed_at?: string | null;
@@ -298,6 +300,8 @@ function getStatusIcon(status: number) {
                     Status {getArrow("status")}
                   </th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total Count</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total Success</th>
+                  <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Total Failure</th>
                   <th onClick={() => handleSort("added_by")} className="cursor-pointer px-4 py-2 text-left text-sm font-medium text-gray-700">
                     Added By {getArrow("added_by")}
                   </th>
@@ -322,6 +326,8 @@ function getStatusIcon(status: number) {
                       {/*<td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.file_path}</td>*/}
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{getStatusIcon(file.status)}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.total_count}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.total_success}</td>
+                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.total_failure}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{file.added_by}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{new Date(file.added_on).toLocaleString()}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{file.completed_at ? new Date(file.completed_at).toLocaleString() : "N/A"}</td>
