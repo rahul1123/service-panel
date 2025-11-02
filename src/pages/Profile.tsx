@@ -2,6 +2,9 @@ import Layout from "@/components/Layout";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
+import { API_BASE_URL } from "../config/api";
+import axios from "axios";
 
 export default function CustomerFileUploads() {
   const { getUserDetails } = useAuth();
@@ -10,6 +13,8 @@ export default function CustomerFileUploads() {
   const [showApiPassword, setShowApiPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isEditingPassword, setIsEditingPassword] = useState(false);
+    const [userId, setUserId] = useState<number | null>(null);
+     const [isEditing, setIsEditing] = useState(false);
 
  
 
@@ -25,6 +30,7 @@ export default function CustomerFileUploads() {
     services: "",
     status: "active",
     role: "customer",
+    id:""
   });
 
   useEffect(() => {
@@ -42,6 +48,7 @@ export default function CustomerFileUploads() {
         password: info.password || "",
         status: info.status || "active",
         role: info.role || "customer",
+        id: info.id?.toString() || "",
       }));
     }
   }, [getUserDetails]);
@@ -51,20 +58,34 @@ export default function CustomerFileUploads() {
     setErrors({ ...errors, [e.target.name]: "" });
   };
 
-  const handlePasswordUpdate = async () => {
-    if (!formData.password) {
-      setErrors({ password: "Password cannot be empty" });
-      return;
-    }
-
+  const handleProfileUpdate = async () => {
+  
     try {
       setLoading(true);
-      console.log("Updating password:", formData.password);
-      alert("Password updated successfully!");
-      setIsEditingPassword(false);
-    } catch (error) {
+      const token = localStorage.getItem("token");
+
+      const { data } = await axios.put(
+        `${API_BASE_URL}/customer/update/${formData.id}`,
+        {
+          name: formData.name,
+          password: formData.password,
+          api_username: formData.api_username,
+          api_password: formData.api_password,
+          user_id:formData.id
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "x-api-key": "f7ab26185b14fc87db613850887be3b8",
+          },
+        }
+      );
+
+      toast.success("Profile updated successfully!");
+      setIsEditing(false);
+    } catch (error: any) {
       console.error(error);
-      alert("Failed to update password");
+      toast.error("Failed to update profile");
     } finally {
       setLoading(false);
     }
@@ -172,32 +193,6 @@ export default function CustomerFileUploads() {
             )}
           </button>
 
-          {!isEditingPassword ? (
-            <button
-              type="button"
-              onClick={() => setIsEditingPassword(true)}
-              className="text-sm text-blue-600 mt-2 hover:underline"
-            >
-              Change Password
-            </button>
-          ) : (
-            <div className="mt-2 flex gap-2">
-              <button
-                onClick={handlePasswordUpdate}
-                disabled={loading}
-                className="px-3 py-1 bg-green-600 text-white rounded-md text-sm"
-              >
-                {loading ? "Updating..." : "Save"}
-              </button>
-              <button
-                onClick={() => setIsEditingPassword(false)}
-                className="px-3 py-1 bg-gray-300 rounded-md text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-        </div>
 
         {/* Mobile */}
         <div>
@@ -260,6 +255,33 @@ export default function CustomerFileUploads() {
               <Eye className="w-5 h-5" />
             )}
           </button>
+        </div>
+        
+          {!isEditingPassword ? (
+            <button
+              type="button"
+              onClick={() => setIsEditingPassword(true)}
+              className="text-sm text-blue-600 mt-2 hover:underline"
+            >
+              Change Password
+            </button>
+          ) : (
+            <div className="mt-2 flex gap-2">
+              <button
+                onClick={handleProfileUpdate}
+                disabled={loading}
+                className="px-3 py-1 bg-green-600 text-white rounded-md text-sm"
+              >
+                {loading ? "Updating..." : "Save"}
+              </button>
+              <button
+                onClick={() => setIsEditingPassword(false)}
+                className="px-3 py-1 bg-gray-300 rounded-md text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </Layout>
