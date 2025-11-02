@@ -327,7 +327,7 @@ function getStatusIcon(status: number) {
                     </td>
                   <td className="px-4 py-2 text-sm text-gray-900">{file.total_count}</td>
                   <td className="px-4 py-2 text-sm text-gray-900">{file.total_success}</td>
-                  <td className="px-4 py-2 text-sm text-gray-900">{file.total_count}</td>
+                  <td className="px-4 py-2 text-sm text-gray-900">{file.total_failure}</td>
                   <td className="px-4 py-2 text-sm text-gray-900">{file.added_by}</td>
                   <td className="px-4 py-2 text-sm text-gray-500">{new Date(file.added_on).toLocaleString()}</td>
                   <td className="px-4 py-2 text-sm text-gray-500">{file.completed_at ? new Date(file.completed_at).toLocaleString() : "N/A"}</td>
