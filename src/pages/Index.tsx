@@ -1,7 +1,8 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
+import { Button } from "@/components/ui/button"
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   LineChart,
@@ -19,9 +20,14 @@ import {
   Legend,
 } from "recharts";
 import { Users } from "lucide-react";
+import { API_BASE_URL } from "../config/api";
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<any>(null);
+  const [fromDate, setFromDate] = useState("");
+  const [activeFromDate, setActiveFromDate] = useState("");
+  const [activeToDate, setActiveToDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const dummyData = {
     topMetrics: {
       total_customers_success: "23K",
@@ -52,22 +58,27 @@ export default function Dashboard() {
       { day: "21/10/2025", success: 160, failure: 25 },
     ],
   };
-  //Fetch Dashboard Data (simulate API)
-  useEffect(() => {
-    async function fetchDashboardData() {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/dashboard");
-        if (!response.ok) throw new Error("Network error");
-        const data = await response.json();
-        setDashboardData(data);
-      } catch (error) {
-        console.warn("API failed, using dummy data:", error);
-        setDashboardData(dummyData);
-      } finally {
-        setLoading(false);
-      }
+
+    const fetchDashboardData = async (from?: string, to?: string) => {
+    try {
+      setLoading(true);
+    const today = new Date().toISOString().split("T")[0];
+    const fromDate = from || today;
+    const toDate = to || today;
+    const query = `?from=${fromDate}&to=${toDate}`;
+      const response = await fetch(`${API_BASE_URL}/api/dashboard${query}`);
+      if (!response.ok) throw new Error("Network error");
+      const data = await response.json();
+      setDashboardData(data);
+    } catch (error) {
+      console.warn("API failed, using dummy data:", error);
+      setDashboardData(dummyData);
+    } finally {
+      setLoading(false);
     }
+  };
+  //Fetch Dashboard Data (simulate API)
+ useEffect(() => {
     fetchDashboardData();
   }, []);
   if (loading) {
@@ -104,6 +115,23 @@ export default function Dashboard() {
       color: "bg-cyan-100 text-cyan-600",
     },
   ];
+  const handleDateFilter = () => {
+    if (!fromDate || !toDate) {
+      toast.error("Please select both From and To dates");
+      return;
+    }
+    const from = new Date(fromDate);
+    const to = new Date(toDate);
+
+    if (isNaN(from.getTime()) || isNaN(to.getTime()) || from > to) {
+      toast.error("Invalid date range");
+      return;
+    }
+
+    setActiveFromDate(fromDate);
+    setActiveToDate(toDate);
+    fetchDashboardData(fromDate, toDate);
+  };
   return (
     <Layout>
       <div className="p-6 space-y-8">
@@ -111,12 +139,27 @@ export default function Dashboard() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-800">📊 Dashboard Overview</h1>
           <div className="flex items-center gap-3">
-            <button className="text-sm bg-gray-100 hover:bg-gray-200 px-3 py-1 rounded-lg">
-              Monthly
-            </button>
-            <button className="text-sm bg-blue-600 text-white hover:bg-blue-700 px-3 py-1 rounded-lg">
-              This Week
-            </button>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600">From:</label>
+              <input
+                type="date"
+                value={fromDate}
+                onChange={e => setFromDate(e.target.value)}
+                className="border rounded p-2"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600">To:</label>
+              <input
+                type="date"
+                value={toDate}
+                onChange={e => setToDate(e.target.value)}
+                className="border rounded p-2"
+              />
+            </div>
+            <Button onClick={handleDateFilter} disabled={loading} size="sm" className="bg-blue-500 text-white hover:bg-blue-600">
+              {loading ? "Submit" : "Submit"}
+            </Button>
           </div>
         </div>
         {/* ===== TOP METRICS ===== */}
