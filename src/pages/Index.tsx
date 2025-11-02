@@ -19,8 +19,9 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { Users, Eye, Package, DollarSign } from "lucide-react";
+import axios from "axios";
 import { API_BASE_URL } from "../config/api";
+import { useAuth } from "@/context/AuthContext";
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -29,6 +30,7 @@ export default function Dashboard() {
   const [activeFromDate, setActiveFromDate] = useState("");
   const [activeToDate, setActiveToDate] = useState("");
   const [toDate, setToDate] = useState("");
+   const { getUserDetails } = useAuth();
   const dummyData = {
     topMetrics: {
       total_customers_success: "23K",
@@ -61,23 +63,35 @@ export default function Dashboard() {
   };
 
     const fetchDashboardData = async (from?: string, to?: string) => {
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
+      const token = getUserDetails()?.token;
+      if (!token) {
+        toast.error("No valid token found. Please log in again.");
+        setDashboardData([]);
+        return;
+      }
+
     const today = new Date().toISOString().split("T")[0];
     const fromDate = from || today;
     const toDate = to || today;
     const query = `?from=${fromDate}&to=${toDate}`;
-      const response = await fetch(`${API_BASE_URL}/api/dashboard${query}`);
-      if (!response.ok) throw new Error("Network error");
-      const data = await response.json();
-      setDashboardData(data);
-    } catch (error) {
-      console.warn("API failed, using dummy data:", error);
-      setDashboardData(dummyData);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const { data } = await axios.get(`${API_BASE_URL}/list/dashboard${query}`, {
+      headers: {
+        "x-api-key": "f7ab26185b14fc87db613850887be3b8",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log(`${API_BASE_URL}/list/dashboard${query}`)
+
+    setDashboardData(data);
+  } catch (error) {
+    console.warn("API failed, using dummy data:", error);
+    setDashboardData(dummyData);
+  } finally {
+    setLoading(false);
+  }
+};
   //Fetch Dashboard Data (simulate API)
  useEffect(() => {
     fetchDashboardData();
