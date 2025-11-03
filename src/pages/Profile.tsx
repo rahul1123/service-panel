@@ -64,8 +64,8 @@ export default function CustomerFileUploads() {
       setLoading(true);
       const token = localStorage.getItem("token");
 
-      const { data } = await axios.put(
-        `${API_BASE_URL}/customer/update/${formData.id}`,
+      const { data } = await axios.post(
+        `${API_BASE_URL}/profile/update/${formData.id}`,
         {
           name: formData.name,
           password: formData.password,
