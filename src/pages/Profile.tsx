@@ -64,7 +64,7 @@ export default function CustomerFileUploads() {
       setLoading(true);
       const token = localStorage.getItem("token");
 
-      const { data } = await axios.post(
+      const { data } = await axios.patch(
         `${API_BASE_URL}/profile/update/${formData.id}`,
         {
           name: formData.name,
@@ -257,31 +257,13 @@ export default function CustomerFileUploads() {
           </button>
         </div>
         
-          {!isEditingPassword ? (
-            <button
-              type="button"
-              onClick={() => setIsEditingPassword(true)}
-              className="text-sm text-blue-600 mt-2 hover:underline"
-            >
-              Change Password
-            </button>
-          ) : (
-            <div className="mt-2 flex gap-2">
-              <button
-                onClick={handleProfileUpdate}
-                disabled={loading}
-                className="px-3 py-1 bg-green-600 text-white rounded-md text-sm"
-              >
-                {loading ? "Updating..." : "Save"}
-              </button>
-              <button
-                onClick={() => setIsEditingPassword(false)}
-                className="px-3 py-1 bg-gray-300 rounded-md text-sm"
-              >
-                Cancel
-              </button>
-            </div>
-          )}
+      <button
+  onClick={handleProfileUpdate}
+  disabled={loading}
+  className="mt-2 px-3 py-1 bg-green-600 text-white rounded-md text-sm"
+>
+  {loading ? "Updating..." : "Update"}
+</button>
         </div>
       </div>
     </Layout>
