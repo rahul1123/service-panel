@@ -80,7 +80,6 @@ export default function CustomerFileUploads() {
           },
         }
       );
-
       toast.success("Profile updated successfully!");
       setIsEditing(false);
     } catch (error: any) {
@@ -151,7 +150,6 @@ export default function CustomerFileUploads() {
             value={formData.name}
             onChange={handleChange}
             className="w-full border rounded-md p-2"
-            readOnly
           />
         </div>
 
@@ -176,7 +174,6 @@ export default function CustomerFileUploads() {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            readOnly={!isEditingPassword}
             className={`w-full border rounded-md p-2 pr-10 ${
               isEditingPassword ? "" : "bg-gray-100"
             }`}
