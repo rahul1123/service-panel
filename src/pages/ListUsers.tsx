@@ -81,9 +81,11 @@ export default function CustomerFileUploads() {
       const term = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (u) =>
+          u.app_name?.toString().includes(searchQuery) ||
           u.email?.includes(searchQuery) ||
           u.username?.includes(searchQuery) ||
           u.batch_id?.toString().includes(searchQuery) ||
+          u.status?.toString().includes(searchQuery) ||
           u.msg?.toString().includes(searchQuery)
       );
     }
@@ -149,12 +151,14 @@ export default function CustomerFileUploads() {
       return;
     }
 
-    const headers = ["#", "Email", "Username", "Batch ID", "Message", "Created At"];
+    const headers = ["#", "App Name","Email", "Username", "Batch ID","Status Code" ,"Message", "Created At"];
     const rows = user.map((file, index) => [
       index + 1,
+      file.app_name || "",
       file.email || "",
       file.username || "",
       file.batch_id || "",
+      file.status || "",
       file.msg || "",
       file.created_at ? new Date(file.created_at).toLocaleString() : "",
     ]);
@@ -268,6 +272,18 @@ export default function CustomerFileUploads() {
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">#</th>
                   <th
                     className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer"
+                    onClick={() => handleSort("batch_id")}
+                  >
+                    Batch ID {getSortIcon("batch_id")}
+                  </th>
+                  <th
+                    className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer"
+                    onClick={() => handleSort("primaryEmail")}
+                  >
+                    App Name {getSortIcon("primaryEmail")}
+                  </th>
+                  <th
+                    className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer"
                     onClick={() => handleSort("primaryEmail")}
                   >
                     Email {getSortIcon("primaryEmail")}
@@ -277,12 +293,12 @@ export default function CustomerFileUploads() {
                     onClick={() => handleSort("Username")}
                   >
                     Username {getSortIcon("Username")}
-                  </th>
+                  </th>                  
                   <th
                     className="px-4 py-2 text-left text-sm font-medium text-gray-700 cursor-pointer"
                     onClick={() => handleSort("batch_id")}
                   >
-                    Batch ID {getSortIcon("batch_id")}
+                    Status Code {getSortIcon("batch_id")}
                   </th>
                   <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">
                     Message
@@ -299,9 +315,23 @@ export default function CustomerFileUploads() {
                 {currentUsers.map((file, index) => (
                   <tr key={file.id || index} className="hover:bg-gray-50">
                     <td className="px-4 py-2 text-sm text-gray-900">{startIndex + index + 1}</td>
+                    <td className="px-4 py-2 text-sm text-gray-900"> <span className="text-gray-900">{file.batch_id || "-"}</span></td>
+                    <td className="px-4 py-2 text-sm text-gray-900">{file.app_name}</td>
                     <td className="px-4 py-2 text-sm text-gray-900"><i className="bi bi-envelope text-gray-400 mr-1"></i>{file.email}</td>
-                    <td className="px-4 py-2 text-sm text-gray-900">{file.username}</td>
-                    <td className="px-4 py-2 text-sm text-gray-900"> <span className="text-gray-900">{file.batch_id || "N/A"}</span></td>
+                    <td className="px-4 py-2 text-sm text-gray-900">{file.username}</td>                    
+                    <td className="px-4 py-3">
+                        {Number(file.status) === 200 ? (
+                          <span className="flex items-center gap-1 text-green-600 bg-green-100 px-2 py-1 rounded-full text-xs font-medium">
+                            <i className="bi bi-check-circle-fill"></i>
+                            200
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-red-600 bg-red-100 px-2 py-1 rounded-full text-xs font-medium">
+                            <i className="bi bi-exclamation-triangle-fill"></i>
+                            {file.status || "Error"}
+                          </span>
+                        )}
+                      </td>
                     <td className="px-4 py-2 text-sm text-gray-900">{file.msg || "N/A"}</td>
                     <td className="px-4 py-2 text-sm text-gray-500">
                       {new Date(file.created_at).toLocaleString()}
