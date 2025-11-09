@@ -20,6 +20,8 @@ import { AuthProvider } from "@/context/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PublicRoute from "@/components/PublicRoute";
 const Profile = lazy(() => import("./pages/Profile"));
+const Reporting = lazy(() => import("./pages/Reporting"));
+
 const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -94,6 +96,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <CreateAppCustomers/>
+                  </ProtectedRoute>
+                }
+              />
+                 <Route
+                path="/reporting"
+                element={
+                  <ProtectedRoute>
+                    <Reporting/>
                   </ProtectedRoute>
                 }
               />

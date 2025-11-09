@@ -75,6 +75,12 @@ const menuItems = [
      url: "/list-app-user",
      icon: List,
      roles: ["admin"],
+  },
+    {
+     title: "Reporting",
+     url: "/reporting",
+     icon: BarChart3,
+     roles: ["admin"],
   }
 ];
 function AppSidebar() {
