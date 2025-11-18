@@ -21,6 +21,7 @@ import {
   LogOut,
   List,
   User,
+  Plug
 } from "lucide-react";
 import { useLocation, Link,useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -81,7 +82,13 @@ const menuItems = [
      url: "/reporting",
      icon: BarChart3,
      roles: ["admin"],
-  }
+  },
+   {
+  title: "Api Integration Doc",
+  url: "/api-docs",
+  icon: Plug,
+  roles: ["customer"],
+}
 ];
 function AppSidebar() {
   const location = useLocation();

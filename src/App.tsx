@@ -21,6 +21,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import PublicRoute from "@/components/PublicRoute";
 const Profile = lazy(() => import("./pages/Profile"));
 const Reporting = lazy(() => import("./pages/Reporting"));
+const ApiDocsPage= lazy(() => import("./pages/ApiDocsPage"));
 
 const queryClient = new QueryClient();
 const App = () => (
@@ -107,6 +108,8 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+<Route path="/api-docs" element={<ApiDocsPage />} />
+              api-docs
 
                 <Route
                 path="/profile"
